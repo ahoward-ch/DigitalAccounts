@@ -1,3 +1,4 @@
 AccountsData/**
 cache**/**
 .ipynb_checkpoints
+**.code-workspace
