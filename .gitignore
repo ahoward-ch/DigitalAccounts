@@ -3,3 +3,6 @@ cache**/**
 .ipynb_checkpoints
 **.code-workspace
 accounts_data/**
+**.json
+__pycache__/**
+.pytest_cache/**
