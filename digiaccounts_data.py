@@ -20,17 +20,19 @@ def get_financial_facts(xbrl_instance):
     dates = []
 
     for fact in xbrl_instance.facts:
-        if (hasattr(fact.context, 'instant_date')) and (hasattr(fact, 'unit')):
-            if fact.concept.name == 'Creditors':
-                if 'MaturitiesOrExpirationPeriodsDimension' in fact.json()['dimensions']:
-                    if fact.json()['dimensions']['MaturitiesOrExpirationPeriodsDimension'] == 'WithinOneYear':
+        if (check_instant_date(fact)) and (check_unit_gbp(fact)):
+            fact_dimensions = return_dimension_dict(fact)
+            if check_name_is_string('creditors', fact):
+                if 'MaturitiesOrExpirationPeriodsDimension' in fact_dimensions:
+                    if fact_dimensions['MaturitiesOrExpirationPeriodsDimension'] == 'WithinOneYear':
                         period = 'DueWithinOneYear'
                         names.append(fact.concept.name + period)
                     else:
                         period = 'DueAfterOneYear'
                         names.append(fact.concept.name + period)
-                elif 'FinancialInstrumentCurrentNon-currentDimension' in fact.json()['dimensions']:
-                    if fact.json()['dimensions']['FinancialInstrumentCurrentNon-currentDimension'] == 'CurrentFinancialInstruments':
+                elif 'FinancialInstrumentCurrentNon-currentDimension' in fact_dimensions:
+                    if (fact_dimensions['FinancialInstrumentCurrentNon-currentDimension']
+                        == 'CurrentFinancialInstruments'):
                         period = 'DueWithinOneYear'
                         names.append(fact.concept.name + period)
                     else:
@@ -38,8 +40,8 @@ def get_financial_facts(xbrl_instance):
                         names.append(fact.concept.name + period)
                 else:
                     raise KeyError(fact.json())
-            elif (fact.concept.name == 'Equity') and ('EquityClassesDimension' in fact.json()['dimensions']):
-                entity_type = fact.json()['dimensions']['EquityClassesDimension']
+            elif (check_name_is_string('equity', fact)) and ('EquityClassesDimension' in fact_dimensions):
+                entity_type = fact_dimensions['EquityClassesDimension']
                 names.append(fact.concept.name + entity_type)
             else:
                 names.append(fact.concept.name)
@@ -134,4 +136,72 @@ def get_company_registration(xbrl_instance):
             return fact.value
         else:
             pass
+
+def get_accounting_software(xbrl_instance):
+
+    for fact in xbrl_instance.facts:
+        if fact.concept.name == 'NameProductionSoftware':
+            return fact.value
+
+def get_share_info(xbrl_instance):
+
+    share_info = []
+    for fact in xbrl_instance.facts:
+        if (check_string_in_name('share', fact)):
+            name = fact.concept.name
+            value = fact.value 
+            unit = None
+            date = None               
+            if check_instant_date(fact):
+                date = fact.context.instant_date.isoformat()
+            if check_unit_gbp(fact):
+                unit = '£'
+            share_info.append([name, unit, value, date])
+        elif check_name_is_string('equity', fact):
+            dimensions = return_dimension_values(fact)
+            if any(['share' in v.lower() for v in dimensions]):
+                for v in dimensions:
+                    if 'share' in v.lower():
+                        name = fact.concept.name + v
+                        break
+                value = fact.value
+                unit = None
+                date = None
+                if check_instant_date(fact):
+                    date = fact.context.instant_date.isoformat()
+                if check_unit_gbp(fact):
+                    unit = '£'
+                share_info.append([name, unit, value, date])
+    return share_info
+
+
+def check_unit_gbp(fact):
+    if hasattr(fact, 'unit') and (fact.unit.unit == 'iso4217:GBP'):
+        return True
+    else:
+        return False
+
+def check_instant_date(fact):
+    if hasattr(fact.context, 'instant_date'):
+        return True
+    else:
+        return False
+
+def check_string_in_name(string, fact):
+    if string.lower() in fact.concept.name.lower():
+        return True
+    else:
+        return False
+
+def check_name_is_string(string, fact):
+    if fact.concept.name.lower() == string.lower():
+        return True
+    else:
+        return False
+
+def return_dimension_dict(fact):
+    return fact.json()['dimensions']
+
+def return_dimension_values(fact):
+    return fact.json()['dimensions'].values()
                 
