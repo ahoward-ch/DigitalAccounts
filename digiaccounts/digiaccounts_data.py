@@ -3,6 +3,14 @@
 
 import logging
 import pandas as pd
+from digiaccounts.digiaccounts_util import (
+    check_unit_gbp,
+    check_name_is_string,
+    check_string_in_name,
+    check_instant_date,
+    return_dimension_dict,
+    return_dimension_values
+    )
 
 
 def get_financial_facts(xbrl_instance):
@@ -174,34 +182,28 @@ def get_share_info(xbrl_instance):
                 share_info.append([name, unit, value, date])
     return share_info
 
+def get_director_names(xbrl_instance):
 
-def check_unit_gbp(fact):
-    if hasattr(fact, 'unit') and (fact.unit.unit == 'iso4217:GBP'):
-        return True
-    else:
-        return False
-
-def check_instant_date(fact):
-    if hasattr(fact.context, 'instant_date'):
-        return True
-    else:
-        return False
-
-def check_string_in_name(string, fact):
-    if string.lower() in fact.concept.name.lower():
-        return True
-    else:
-        return False
-
-def check_name_is_string(string, fact):
-    if fact.concept.name.lower() == string.lower():
-        return True
-    else:
-        return False
-
-def return_dimension_dict(fact):
-    return fact.json()['dimensions']
-
-def return_dimension_values(fact):
-    return fact.json()['dimensions'].values()
+    director_dict = {}
+    duplicate_director_idx = 0
+    for fact in xbrl_instance.facts:
+        if check_name_is_string('NameEntityOfficer', fact):
+            director_number = return_dimension_dict(fact)['EntityOfficersDimension']
+            director = fact.value
+            if (director_number not in director_dict) and (director not in director_dict.values()):
+                director_dict[director_number] = director
+            elif (director_number not in director_dict) and (director in director_dict.values()):
+                director_dict[director_number] = director
+                _s = 'Same director holding multiple board positions.'
+                logging.warning(_s)
+            elif (director_number in director_dict) and (director not in director_dict.values()):
+                duplicate_director_idx += 1
+                director_number = director_number + f'_{duplicate_director_idx}'
+                director_dict[director_number] = director
+                _s = 'Multiple directors holding same board position.'
+                logging.warning(_s)
+            else:
+                pass
+            
+    return director_dict
                 

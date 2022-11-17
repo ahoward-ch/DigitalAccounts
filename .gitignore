@@ -4,5 +4,6 @@ cache**/**
 **.code-workspace
 accounts_data/**
 **.json
-__pycache__/**
+**/__pycache__/**
 .pytest_cache/**
+**/test_cache/**

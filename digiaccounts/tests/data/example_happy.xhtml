@@ -1,0 +1,160 @@
+<!--This is an example iXBRL File -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:business="http://xbrl.frc.org.uk/cd/2014-09-01/business"
+    xmlns:core="http://xbrl.frc.org.uk/fr/2014-09-01/core" xmlns:direp="http://xbrl.frc.org.uk/reports/2014-09-01/direp"
+    xmlns:iso4217="http://www.xbrl.org/2003/iso4217" xmlns:ix="http://www.xbrl.org/2013/inlineXBRL"
+    xmlns:ixt="http://www.xbrl.org/inlineXBRL/transformation/2010-04-20"
+    xmlns:ixt2="http://www.xbrl.org/inlineXBRL/transformation/2011-07-31" xmlns:link="http://www.xbrl.org/2003/linkbase"
+    xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:xbrli="http://www.xbrl.org/2003/instance"
+    xmlns:xlink="http://www.w3.org/1999/xlink" version="-//XBRL International//DTD XHTML Inline XBRL 1.1//EN">
+
+<head>
+    <title>Sample iXBRL file - Happy Path</title>
+    <style>
+        * {
+            text-align: center
+        }
+
+        table {
+            margin: auto
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="display:none">
+        <ix:header>
+            <ix:references>
+                <link:schemaRef xlink:href="https://xbrl.frc.org.uk/FRS-102/2014-09-01/FRS-102-2014-09-01.xsd"
+                    xlink:type="simple"></link:schemaRef>
+            </ix:references>
+
+            <ix:resources>
+                <xbrli:context id="FY2020">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:startDate>2020-01-01</xbrli:startDate>
+                        <xbrli:endDate>2020-12-31</xbrli:endDate>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:context id="START_2020">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:instant>2020-01-01</xbrli:instant>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:context id="END_2020">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:instant>2020-12-31</xbrli:instant>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:context id="businessDirector1">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                        <xbrli:segment>
+                            <xbrldi:explicitMember dimension="business:EntityOfficersDimension">business:Director1
+                            </xbrldi:explicitMember>
+                        </xbrli:segment>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:startDate>2020-01-01</xbrli:startDate>
+                        <xbrli:endDate>2020-12-31</xbrli:endDate>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:context id="businessDirector2">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                        <xbrli:segment>
+                            <xbrldi:explicitMember dimension="business:EntityOfficersDimension">business:Director2
+                            </xbrldi:explicitMember>
+                        </xbrli:segment>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:startDate>2020-01-01</xbrli:startDate>
+                        <xbrli:endDate>2020-12-31</xbrli:endDate>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:unit id="gbp">
+                    <xbrli:measure>iso4217:GBP</xbrli:measure>
+                </xbrli:unit>
+                <xbrli:unit id="shares">
+                    <xbrli:measure>xbrli:shares</xbrli:measure>
+                </xbrli:unit>
+            </ix:resources>
+
+            <ix:hidden>
+                <!-- Hidden Facts can be placed here -->
+            </ix:hidden>
+        </ix:header>
+    </div>
+
+    <h1>This is a dummy iXBRL file for Happy Path tests</h1>
+
+    <div>
+        <ix:nonNumeric id='dir1' contextRef="businessDirector1" name="business:NameEntityOfficer">J SMITH
+        </ix:nonNumeric>
+    </div>
+    <div>
+        <ix:nonNumeric id='dir2' contextRef="businessDirector2" name="business:NameEntityOfficer">F BLOGS
+        </ix:nonNumeric>
+    </div>
+    <div>
+        Company Registration No. <ix:nonNumeric id='reg' contextRef="FY2020"
+            name="business:UKCompaniesHouseRegisteredNumber">
+            0000000000</ix:nonNumeric>
+    </div>
+
+    <table>
+        <tr>
+            <th></th>
+            <th>01 Jan 2020</th>
+            <th>31 Dec 2020</th>
+        </tr>
+        <tr>
+            <th>Concept</th>
+            <th>£</th>
+            <th>£</th>
+        </tr>
+        <tr>
+            <td>Cash on Hand</td>
+            <td>
+                <ix:nonFraction id='coh1' name="core:CashBankOnHand" contextRef="START_2020" unitRef="gbp" decimals="-6"
+                    scale="6" format="ixt2:numdotdecimal">
+                    12,345
+                </ix:nonFraction>
+            </td>
+            <td>
+                <ix:nonFraction id='coh2' name="core:CashBankOnHand" contextRef="END_2020" unitRef="gbp" decimals="-6"
+                    scale="6" format="ixt2:numdotdecimal">
+                    12,345
+                </ix:nonFraction>
+            </td>
+        </tr>
+        <tr>
+            <td>Investment Properties</td>
+            <td>
+                <ix:nonFraction id='inv1' name="core:InvestmentProperty" contextRef="START_2020" unitRef="gbp"
+                    decimals="-6" scale="6" format="ixt2:numdotdecimal">
+                    9,876
+                </ix:nonFraction>
+            </td>
+            <td>
+                <ix:nonFraction id='inv2' name="core:InvestmentProperty" contextRef="END_2020" unitRef="gbp"
+                    decimals="-6" scale="6" format="ixt2:numdotdecimal">
+                    9,876
+                </ix:nonFraction>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
