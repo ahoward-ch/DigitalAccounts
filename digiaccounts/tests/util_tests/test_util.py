@@ -1,9 +1,4 @@
-from os import path
-import pytest
-
-
-from xbrl.cache import HttpCache
-from xbrl.instance import XbrlParser, XbrlInstance
+"""unit tests for digiaccounts utility functions"""
 
 from digiaccounts.digiaccounts_data import (
     check_unit_gbp,
@@ -13,17 +8,16 @@ from digiaccounts.digiaccounts_data import (
 )
 
 
-@pytest.fixture(name='yield_xbrl_instance', scope='module')
-def fixture_yield_xbrl_instance(sad=False):
-    cache = HttpCache('./test_cache')
-    parser = XbrlParser(cache)
-
-    schema = path.join('digiaccounts', 'tests', 'data', 'example_happy.xhtml')
-
-    yield parser.parse_instance(schema)
-
-
 def test_check_unit_gbp(yield_xbrl_instance):
+    """unit test for check_unit_gbp.
+
+    Success:
+        assert fact 'coh1' as True
+        assert fact 'dir1' as False
+
+    Args:
+        yield_xbrl_instance (fixture): xbrl instance generator
+    """
     inst = yield_xbrl_instance
     for fact in inst.facts:
         if fact.xml_id == 'coh1':
@@ -33,6 +27,15 @@ def test_check_unit_gbp(yield_xbrl_instance):
 
 
 def test_check_instant_date(yield_xbrl_instance):
+    """unit test for check_instant_date.
+
+    Success:
+        assert fact 'coh1' as True
+        assert fact 'dir1' as False
+
+    Args:
+        yield_xbrl_instance (fixture): xbrl instance generator
+    """
     inst = yield_xbrl_instance
     for fact in inst.facts:
         if fact.xml_id == 'coh1':
@@ -42,6 +45,15 @@ def test_check_instant_date(yield_xbrl_instance):
 
 
 def test_check_name_is_string(yield_xbrl_instance):
+    """unit test for check_name_is_string.
+
+    Success:
+        assert fact 'coh1' as True when string is 'CashBankOnHand'
+        assert fact 'dir1' as False when string is 'CashBankOnHand'
+
+    Args:
+        yield_xbrl_instance (fixture): xbrl instance generator
+    """
     inst = yield_xbrl_instance
     coh1_fact_name = 'CashBankOnHand'
     for fact in inst.facts:
@@ -52,6 +64,15 @@ def test_check_name_is_string(yield_xbrl_instance):
 
 
 def test_check_string_in_name(yield_xbrl_instance):
+    """unit test for check_string_in_name.
+
+    Success:
+        assert fact 'coh1' as True when string is 'Bank'
+        assert fact 'dir1' as False when string is 'Bank'
+
+    Args:
+        yield_xbrl_instance (fixture): xbrl instance generator
+    """
     inst = yield_xbrl_instance
     coh1_fact_partial_name = 'Bank'
     for fact in inst.facts:

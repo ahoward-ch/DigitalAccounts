@@ -10,7 +10,7 @@ from digiaccounts.digiaccounts_util import (
     check_instant_date,
     return_dimension_dict,
     return_dimension_values
-    )
+)
 
 
 def get_financial_facts(xbrl_instance):
@@ -40,14 +40,18 @@ def get_financial_facts(xbrl_instance):
                         names.append(fact.concept.name + period)
                 elif 'FinancialInstrumentCurrentNon-currentDimension' in fact_dimensions:
                     if (fact_dimensions['FinancialInstrumentCurrentNon-currentDimension']
-                        == 'CurrentFinancialInstruments'):
+                            == 'CurrentFinancialInstruments'):
                         period = 'DueWithinOneYear'
                         names.append(fact.concept.name + period)
                     else:
                         period = 'DueAfterOneYear'
                         names.append(fact.concept.name + period)
                 else:
-                    raise KeyError(fact.json())
+                    _s = 'Creditors Fact does not contain known credit period key.'
+                    _s_json = f'Fact JSON dictionary: {fact.json()}'
+                    logging.error(_s)
+                    logging.debug(_s_json)
+                    raise KeyError(_s)
             elif (check_name_is_string('equity', fact)) and ('EquityClassesDimension' in fact_dimensions):
                 entity_type = fact_dimensions['EquityClassesDimension']
                 names.append(fact.concept.name + entity_type)
@@ -76,7 +80,10 @@ def get_financial_table(xbrl_instance):
     mask = df[['Fact', 'Date']].duplicated(keep=False)
     df.loc[mask, 'Fact'] += df.groupby(['Fact', 'Date']).cumcount().add(1).astype(str)
 
-    return df.pivot(index='Fact', columns='Date', values='Value').reset_index()
+    df = df.pivot(index='Fact', columns='Date', values='Value').reset_index()
+    df.index.name = None
+
+    return df
 
 
 def get_startend_period(xbrl_instance):
@@ -120,13 +127,14 @@ def get_company_address(xbrl_instance):
     for fact in xbrl_instance.facts:
         if any(s in fact.concept.name for s in address_variables_flags):
             if fact.concept.name in address:
-                address[fact.concept.name].append(fact.value)
+                address[fact.concept.name].append(fact.value.strip())
             else:
-                address[fact.concept.name] = [fact.value]
+                address[fact.concept.name] = [fact.value.strip()]
         else:
             pass
     address_df = pd.DataFrame(address)
     return address_df
+
 
 def get_company_registration(xbrl_instance):
     """extracts and returns the registered company registration number from an XBRL file instance of accounts
@@ -141,25 +149,48 @@ def get_company_registration(xbrl_instance):
     """
     for fact in xbrl_instance.facts:
         if fact.concept.name == 'UKCompaniesHouseRegisteredNumber':
-            return fact.value
+            return fact.value.strip()
         else:
             pass
 
-def get_accounting_software(xbrl_instance):
 
+def get_accounting_software(xbrl_instance):
+    """extracts and returns the software used to generate the XBRL file
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        str: a string indicating the name of the accounting software used
+    """
     for fact in xbrl_instance.facts:
         if fact.concept.name == 'NameProductionSoftware':
-            return fact.value
+            return fact.value.strip()
+
 
 def get_share_info(xbrl_instance):
+    """create list for any share data contained within the accounts.
 
+    TODO:
+        current extent and type of share information contained within accounts is unknown. At present, procedure is to
+        just return a list of any possible share information. Once full scope is understood, it will be presented in a
+        better format.
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        list: a list of all collated share information contained within an XBRL instance
+    """
     share_info = []
     for fact in xbrl_instance.facts:
-        if (check_string_in_name('share', fact)):
+        if check_string_in_name('share', fact):
             name = fact.concept.name
-            value = fact.value 
+            value = fact.value
             unit = None
-            date = None               
+            date = None
             if check_instant_date(fact):
                 date = fact.context.instant_date.isoformat()
             if check_unit_gbp(fact):
@@ -182,14 +213,23 @@ def get_share_info(xbrl_instance):
                 share_info.append([name, unit, value, date])
     return share_info
 
-def get_director_names(xbrl_instance):
 
+def get_director_names(xbrl_instance):
+    """create dictionary of all directors named in an XBRL accounts instance
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        dict: a dictionary of the named directors listing their position and name
+    """
     director_dict = {}
     duplicate_director_idx = 0
     for fact in xbrl_instance.facts:
         if check_name_is_string('NameEntityOfficer', fact):
             director_number = return_dimension_dict(fact)['EntityOfficersDimension']
-            director = fact.value
+            director = fact.value.strip()
             if (director_number not in director_dict) and (director not in director_dict.values()):
                 director_dict[director_number] = director
             elif (director_number not in director_dict) and (director in director_dict.values()):
@@ -204,6 +244,4 @@ def get_director_names(xbrl_instance):
                 logging.warning(_s)
             else:
                 pass
-            
     return director_dict
-                
