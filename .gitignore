@@ -7,3 +7,4 @@ accounts_data/**
 **/__pycache__/**
 .pytest_cache/**
 **/test_cache/**
+**.csv

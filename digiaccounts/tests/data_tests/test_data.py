@@ -1,15 +1,97 @@
-import pytest
+"""unit tests for digiaccounts_data functions"""
 
 from digiaccounts.digiaccounts_data import (
+    get_single_fact,
+    get_company_registration,
+    get_accounting_software,
+    get_dormant_state,
+    get_average_employees,
+    get_company_postcode,
     get_financial_facts,
     get_financial_table,
     get_startend_period,
     get_company_address,
-    get_company_registration,
-    get_accounting_software,
     get_share_info,
     get_director_names
 )
+
+
+def test_get_single_fact(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return string '0000000000' when parsed string 'UKCompaniesHouseRegisteredNumber' and XbrlInstance of
+    example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+    fact_name = 'UKCompaniesHouseRegisteredNumber'
+    data_truth = '0000000000'
+
+    assert get_single_fact(fact_name, inst) == data_truth
+
+
+def test_get_company_registration(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return string '0000000000' when parsed XbrlInstance of example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+    data_truth = '0000000000'
+
+    assert get_company_registration(inst) == data_truth
+
+
+def test_get_accounting_software(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return string 'VsCode' when parsed XbrlInstance of example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+    data_truth = 'VsCode'
+
+    assert get_accounting_software(inst) == data_truth
+
+
+def test_get_dormant_state(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return bool False when parsed XbrlInstance of example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+
+    assert not get_dormant_state(inst)
+
+
+def test_get_average_employees(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return int 5 when parsed XbrlInstance of example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+    data_truth = 5
+
+    assert get_average_employees(inst) == data_truth
+
+
+def test_get_company_postcode(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return string 'AA1 1AA' when parsed XbrlInstance of example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+    data_truth = 'AA1 1AA'
+
+    assert get_company_postcode(inst) == data_truth
+
+
+def test_get_startend_period(yield_xbrl_instance):
+    """test get_single_fact function
+
+    Expected to return tuple ('2020-01-01', '2020-12-31') when parsed XbrlInstance of example_happy.xhtml
+    """
+    inst = yield_xbrl_instance
+    data_truth = ('2020-01-01', '2020-12-31')
+
+    assert get_startend_period(inst) == data_truth
 
 
 def test_get_financial_facts(yield_xbrl_instance, yield_financial_dict):
@@ -34,12 +116,6 @@ def test_get_financial_table(yield_xbrl_instance, yield_financial_table):
     assert sorted(data_test) == sorted(data_truth)
 
 
-def test_get_startend_period(yield_xbrl_instance):
-    inst = yield_xbrl_instance
-
-    assert get_startend_period(inst) == ('2020-01-01', '2020-12-31')
-
-
 def test_get_company_address(yield_xbrl_instance, yield_address_table):
     inst = yield_xbrl_instance
     column_truth, data_truth = yield_address_table
@@ -49,18 +125,6 @@ def test_get_company_address(yield_xbrl_instance, yield_address_table):
     data_test = dataframe_test.values.tolist()
     assert sorted(column_test) == sorted(column_truth)
     assert sorted(data_test) == sorted(data_truth)
-
-
-def test_get_company_registration(yield_xbrl_instance):
-    inst = yield_xbrl_instance
-
-    assert get_company_registration(inst) == '0000000000'
-
-
-def test_get_accounting_software(yield_xbrl_instance):
-    inst = yield_xbrl_instance
-
-    assert get_accounting_software(inst) == 'VsCode'
 
 
 def test_get_share_info(yield_xbrl_instance, yield_share_table):

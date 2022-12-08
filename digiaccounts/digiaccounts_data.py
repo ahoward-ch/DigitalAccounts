@@ -3,6 +3,7 @@
 
 import logging
 import pandas as pd
+from digiaccounts.config import *
 from digiaccounts.digiaccounts_util import (
     check_unit_gbp,
     check_name_is_string,
@@ -13,8 +14,164 @@ from digiaccounts.digiaccounts_util import (
 )
 
 
+def get_single_fact(fact_name, xbrl_instance):
+    """extracts and returns single fact value from an XBRL file instance of accounts based on a fact concept name
+
+    Args:
+        fact_name (str): a string giving the name of an XBRL fact
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Raises:
+        KeyError: _description_
+
+    Returns:
+        _type_: _description_
+    """
+    for fact in xbrl_instance.facts:
+        if check_name_is_string(fact_name, fact):
+            if isinstance(fact.value, str):
+                return fact.value.strip()
+            else:
+                return fact.value
+    raise KeyError(fact_name_error(fact_name))
+
+
+def get_company_registration(xbrl_instance):
+    """extracts and returns the registered company registration number from an XBRL file instance of accounts
+    information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the company
+        registration needs to be extracted
+
+    Returns:
+        string: a string containing the company registration number
+    """
+    fact_name = FACT_NAME_COMPANY_REGISTRATION
+    return get_single_fact(fact_name, xbrl_instance)
+
+
+def get_accounting_software(xbrl_instance):
+    """extracts and returns the software used to generate the XBRL file
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        str: a string indicating the name of the accounting software used
+    """
+    fact_name = FACT_NAME_ACCOUNTING_SOFTWARE
+    return get_single_fact(fact_name, xbrl_instance)
+
+
+def get_average_employees(xbrl_instance):
+    """extracts and returns the average number of employees for the accounting period
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        int: an integer indicating the number of employees
+    """
+    fact_name = FACT_NAME_AVERAGE_EMPLOYEES
+    return get_single_fact(fact_name, xbrl_instance)
+
+
+def get_dormant_state(xbrl_instance):
+    """extracts and returns dormant status of a company named in an XBRL accounts instance
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        bool: a boolian value for determining dormant state of company
+    """
+    fact_names = FACT_NAME_DORMANT_STATE
+    for fact_name in fact_names:
+        try:
+            state = get_single_fact(fact_name, xbrl_instance)
+        except KeyError:
+            pass
+    if state:
+        return state.lower() == 'true'
+    else:
+        raise KeyError(dormant_state_error)
+
+
+def get_startend_period(xbrl_instance):
+    """extracts and returns the start and end dates for the reporting period covered by an XBRL file instance of
+    accounts information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the reporting period
+        start and end dates need to be extracted
+
+    Returns:
+        start (string): a datetime date object containing the reporting period start date
+        end (string): a datetime date object containing the reporting period end date
+    """
+    start_key = FACT_NAME_START_DATE
+    end_key = FACT_NAME_END_DATE
+
+    start = None
+    end = None
+
+    try:
+        start = get_single_fact(start_key, xbrl_instance)
+    except KeyError:
+        pass
+
+    try:
+        end = get_single_fact(end_key, xbrl_instance)
+    except KeyError:
+        pass
+
+    if (start is not None) or (end is not None):
+        return start, end
+    else:
+        raise KeyError(start_end_error(start_key, end_key))
+
+
+def get_company_postcode(xbrl_instance):
+    """Extracts and returns the primary postcode found within the XBRL tags of an instance of accounts information. Also
+    tags any postcodes with supplementary information if it is present.
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the company address
+        needs to be extracted
+
+    Returns:
+        str
+    """
+    fact_name = FACT_NAME_POSTAL_CODE
+
+    post_codes = {}
+    pcn = 1
+    for fact in xbrl_instance.facts:
+        if check_name_is_string(fact_name, fact):
+            code = fact.value.strip()
+            dimensions = return_dimension_dict(fact)
+            if 'EntityContactTypeDimension' in dimensions:
+                key = dimensions['EntityContactTypeDimension'] + str(pcn)
+            else:
+                key = 'PostCodeUntagged' + str(pcn)
+            post_codes[key] = code
+            pcn += 1
+    if post_codes and any('RegisteredOffice' in k for k in post_codes):
+        primary_key = [k for k in post_codes if 'RegisteredOffice' in k][0]
+        return post_codes[primary_key]
+    elif post_codes:
+        return next(iter(post_codes.values())).strip()
+    else:
+        raise KeyError(fact_name_error(fact_name))
+
+
 def get_financial_facts(xbrl_instance):
-    """create lists for the financial tables in XBRL file instances of accounts information
+    """create lists for the financial facts in XBRL file instances of accounts information
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
@@ -59,7 +216,10 @@ def get_financial_facts(xbrl_instance):
                 names.append(fact.concept.name)
             values.append(fact.value)
             dates.append(fact.context.instant_date.isoformat())
-    return {'Fact': names, 'Value': values, 'Date': dates}
+    if names:
+        return {'Fact': names, 'Value': values, 'Date': dates}
+    else:
+        raise KeyError(financial_data_error)
 
 
 def get_financial_table(xbrl_instance):
@@ -86,30 +246,10 @@ def get_financial_table(xbrl_instance):
     return df
 
 
-def get_startend_period(xbrl_instance):
-    """extracts and returns the start and end dates for the reporting period covered by an XBRL file instance of
-    accounts information
-
-    Args:
-        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the reporting period
-        start and end dates need to be extracted
-
-    Returns:
-        start (string): a datetime date object containing the reporting period start date
-        end (string): a datetime date object containing the reporting period end date
-    """
-    for fact in xbrl_instance.facts:
-        if fact.concept.name == 'StartDateForPeriodCoveredByReport':
-            start = fact.context.instant_date.isoformat()
-        elif fact.concept.name == 'EndDateForPeriodCoveredByReport':
-            end = fact.context.instant_date.isoformat()
-        else:
-            pass
-    return start, end
-
-
 def get_company_address(xbrl_instance):
     """extracts and returns the registered company address from an XBRL file instance of accounts information
+
+    TODO: currently non-functional for accounts that have multiple addresses of differing lengths
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the company address
@@ -134,39 +274,6 @@ def get_company_address(xbrl_instance):
             pass
     address_df = pd.DataFrame(address)
     return address_df
-
-
-def get_company_registration(xbrl_instance):
-    """extracts and returns the registered company registration number from an XBRL file instance of accounts
-    information
-
-    Args:
-        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the company
-        registration needs to be extracted
-
-    Returns:
-        string: a string containing the company registration number
-    """
-    for fact in xbrl_instance.facts:
-        if fact.concept.name == 'UKCompaniesHouseRegisteredNumber':
-            return fact.value.strip()
-        else:
-            pass
-
-
-def get_accounting_software(xbrl_instance):
-    """extracts and returns the software used to generate the XBRL file
-
-    Args:
-        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
-        to be extracted
-
-    Returns:
-        str: a string indicating the name of the accounting software used
-    """
-    for fact in xbrl_instance.facts:
-        if fact.concept.name == 'NameProductionSoftware':
-            return fact.value.strip()
 
 
 def get_share_info(xbrl_instance):

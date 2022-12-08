@@ -1,0 +1,52 @@
+<html xmlns="link.to.XBRL.definition.com" xmlns:core="link.to.core.XBRL.taxonomy.com"
+    xmlns:transform="link.to.XBRL.transforms.com">
+
+<body>
+    <div style="display:none">
+        <core:header>
+            <core:resources>
+                <core:context id="periodOpen">
+                    <core:entity>
+                        <core:identifier>123456</core:identifier>
+                    </core:entity>
+                    <core:period>
+                        <core:instantDate>2020-03-31</core:instantDate>
+                    </core:period>
+                </core:context>
+                <core:context id="periodClose">
+                    <core:entity>
+                        <core:identifier>123456</core:identifier>
+                    </core:entity>
+                    <core:period>
+                        <core:instantDate>2021-03-31</core:instantDate>
+                    </core:period>
+                </core:context>
+            </core:resources>
+        </core:header>
+    </div>
+    <h1>Accounts for Dummy Company</h1>
+    <table>
+        <tr>
+            <th></th>
+            <th>2020</th>
+            <th>2021</th>
+        </tr>
+        <tr>
+            <td>Cash on Hand</td>
+            <td>
+                <core:nonFraction id="cashOnHandPrevious" name="core:cashBankOnHand" contextRef="periodOpen"
+                    format="transform:numdotdecimal">
+                    1,000.00
+                </core:nonFraction>
+            </td>
+            <td>
+                <core:nonFraction id="cashOnHandCurrent" name="core:cashBankOnHand" contextRef="periodClose"
+                    format="transform:numdotdecimal">
+                    2,000.00
+                </core:nonFraction>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
