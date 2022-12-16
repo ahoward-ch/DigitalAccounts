@@ -3,6 +3,7 @@
 
 import logging
 import pandas as pd
+import dateutil
 from digiaccounts.config import *
 from digiaccounts.digiaccounts_util import (
     check_unit_gbp,
@@ -91,6 +92,7 @@ def get_dormant_state(xbrl_instance):
         bool: a boolian value for determining dormant state of company
     """
     fact_names = FACT_NAME_DORMANT_STATE
+    state = False
     for fact_name in fact_names:
         try:
             state = get_single_fact(fact_name, xbrl_instance)
@@ -99,7 +101,7 @@ def get_dormant_state(xbrl_instance):
     if state:
         return state.lower() == 'true'
     else:
-        raise KeyError(dormant_state_error)
+        raise KeyError(dormant_state_error())
 
 
 def get_startend_period(xbrl_instance):
@@ -122,11 +124,13 @@ def get_startend_period(xbrl_instance):
 
     try:
         start = get_single_fact(start_key, xbrl_instance)
+        start = dateutil.parser.parse(start).date().isoformat()
     except KeyError:
         pass
 
     try:
         end = get_single_fact(end_key, xbrl_instance)
+        end = dateutil.parser.parse(end).date().isoformat()
     except KeyError:
         pass
 
@@ -352,3 +356,125 @@ def get_director_names(xbrl_instance):
             else:
                 pass
     return director_dict
+
+
+def get_current_previous_pairs(value_date_dict_list, xbrl_instance):
+    """return tuple of paired facts associated with starting and ending period when given a list of value/date pairs
+    and the XBRL accounts instance they came from
+
+    e.g. return current and previous turnover
+
+    Args:
+        value_date_dict_list (list): list of value/date pairs (as dict) of type float and datetime
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the value/date pairs
+        were extracted - used to obtain the start and end period dates
+
+    Returns:
+        tuple: values for the current and previous period
+    """
+    start, end = get_startend_period(xbrl_instance)
+
+    current = None
+    previous = None
+
+    for item in value_date_dict_list:
+        if (
+            (previous is None)
+            and (start is not None)
+            and (item['date'] <= dateutil.parser.parse(start).date())
+        ):
+            previous = item['value']
+        elif (
+            (current is None)
+            and (item['date'] >= dateutil.parser.parse(end).date())
+        ):
+            current = item['value']
+        else:
+            pass
+    return current, previous
+
+
+def get_entity_turnover(xbrl_instance):
+    """extracts and returns tuple of current and previous turnover from an XBRL file containing finanical accounts
+    information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous turnover
+    """
+    fact_name = FACT_NAME_TURNOVER
+
+    turnovers = []
+
+    # retrieve all facts with context name TurnoverRevenue and place their value and context end date into a dictionary
+    # then append the dictionary to the turnovers list
+    for fact in xbrl_instance.facts:
+        if check_name_is_string(fact_name, fact):
+            turnovers.append({
+                'value': fact.value,
+                'date': fact.context.end_date
+            })
+
+    # if facts present in turnovers list, get the pair that represent the start and end period turnover
+    if turnovers:
+        return get_current_previous_pairs(turnovers, xbrl_instance)
+    else:
+        raise KeyError(fact_name_error(fact_name))
+
+
+def get_intangible_assets(xbrl_instance):
+    """extracts and returns tuple of current and previous intangible assets from an XBRL file containing finanical
+    accounts information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous intangible assets
+    """
+    fact_name = FACT_NAME_INTANGIBLE_ASSETS
+
+    intangibles = []
+
+    # retrieve all facts with context name IntangibleAssets and place their value and context end date into a dictionary
+    # then append the dictionary to the intangibles list
+    for fact in xbrl_instance.facts:
+        if check_name_is_string(FACT_NAME_INTANGIBLE_ASSETS, fact):
+            intangibles.append({
+                'value': fact.value,
+                'date': fact.context.instant_date
+            })
+
+    # if facts present in turnovers list, get the pair that represent the start and end period intangible assets
+    if intangibles:
+        return get_current_previous_pairs(intangibles, xbrl_instance)
+    else:
+        raise KeyError(fact_name_error(fact_name))
+
+
+def get_entity_equity(xbrl_instance):
+    equity = []
+    for fact in xbrl_instance.facts:
+        if check_name_is_string(FACT_NAME_EQUITY, fact):
+            value = fact.value
+            date = fact.context.instant_date.isoformat()
+            fact_dimensions = return_dimension_dict(fact)
+            if ('EquityClassesDimension' in fact_dimensions):
+                dim = fact_dimensions['EquityClassesDimension']
+            else:
+                dim = None
+            if hasattr(fact, 'unit'):
+                unit = fact.unit.unit
+            else:
+                unit = None
+
+            equity.append([value, date, unit, dim])
+
+    if equity:
+        return equity
+    else:
+        raise KeyError

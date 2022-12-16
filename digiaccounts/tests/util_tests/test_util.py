@@ -18,7 +18,7 @@ def test_check_unit_gbp(yield_xbrl_instance):
     Args:
         yield_xbrl_instance (fixture): xbrl instance generator
     """
-    inst = yield_xbrl_instance
+    inst = yield_xbrl_instance()
     for fact in inst.facts:
         if fact.xml_id == 'coh1':
             assert check_unit_gbp(fact)
@@ -36,7 +36,7 @@ def test_check_instant_date(yield_xbrl_instance):
     Args:
         yield_xbrl_instance (fixture): xbrl instance generator
     """
-    inst = yield_xbrl_instance
+    inst = yield_xbrl_instance()
     for fact in inst.facts:
         if fact.xml_id == 'coh1':
             assert check_instant_date(fact)
@@ -54,7 +54,7 @@ def test_check_name_is_string(yield_xbrl_instance):
     Args:
         yield_xbrl_instance (fixture): xbrl instance generator
     """
-    inst = yield_xbrl_instance
+    inst = yield_xbrl_instance()
     coh1_fact_name = 'CashBankOnHand'
     for fact in inst.facts:
         if fact.xml_id == 'coh1':
@@ -73,7 +73,7 @@ def test_check_string_in_name(yield_xbrl_instance):
     Args:
         yield_xbrl_instance (fixture): xbrl instance generator
     """
-    inst = yield_xbrl_instance
+    inst = yield_xbrl_instance()
     coh1_fact_partial_name = 'Bank'
     for fact in inst.facts:
         if fact.xml_id == 'coh1':

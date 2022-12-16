@@ -8,11 +8,15 @@ from xbrl.instance import XbrlParser
 
 
 @pytest.fixture(name='yield_xbrl_instance', scope='session')
-def fixture_yield_xbrl_instance(sad=False):
+def fixture_yield_xbrl_instance():
     """fixture for generating an XBRL instance for unit testing"""
     cache = HttpCache('./test_cache')
     parser = XbrlParser(cache)
 
-    schema = path.join('digiaccounts', 'tests', 'data', 'example_happy.xhtml')
-
-    yield parser.parse_instance(schema)
+    def _path_select(sad=False):
+        if sad:
+            schema = path.join('digiaccounts', 'tests', 'data', 'example_unhappy.xhtml')
+        else:
+            schema = path.join('digiaccounts', 'tests', 'data', 'example_happy.xhtml')
+        return parser.parse_instance(schema)
+    yield _path_select

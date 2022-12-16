@@ -1,7 +1,8 @@
 import pytest
 
+
 @pytest.fixture(name='yield_financial_dict', scope='module')
-def fixture_yield_financial_dict(sad=False):
+def fixture_yield_financial_dict():
     yield {'Fact': ['CashBankOnHand',
                     'CashBankOnHand',
                     'InvestmentProperty',
@@ -41,7 +42,7 @@ def fixture_yield_financial_dict(sad=False):
 
 
 @pytest.fixture(name='yield_financial_table', scope='module')
-def fixture_yield_financial_table(sad=False):
+def fixture_yield_financial_table():
     columns = ['Fact', '2020-01-01', '2020-12-31']
     data = [
         ['CashBankOnHand', 12345000000.0, 12345000000.0],
@@ -55,14 +56,14 @@ def fixture_yield_financial_table(sad=False):
 
 
 @pytest.fixture(name='yield_address_table', scope='module')
-def fixture_yield_address_table(sad=False):
+def fixture_yield_address_table():
     columns = ['AddressLine1', 'PrincipalLocation-CityOrTown', 'PostalCodeZip']
     data = [['1A A STREET', 'A TOWN', 'AA1 1AA']]
     yield columns, data
 
 
 @pytest.fixture(name='yield_share_table', scope='module')
-def fixture_yield_share_table(sad=False):
+def fixture_yield_share_table():
     shares = [
         ['DescriptionReasonsForSpecificShareIssue', None, 'cash at par', None],
         ['DescriptionShareType', None, 'Ordinary', '2020-12-31'],

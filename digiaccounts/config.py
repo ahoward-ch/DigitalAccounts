@@ -9,6 +9,12 @@ FACT_NAME_DORMANT_STATE = ['EntityDormantTruefalse', 'EntityDormant']
 FACT_NAME_COMPANY_REGISTRATION = 'UKCompaniesHouseRegisteredNumber'
 FACT_NAME_ACCOUNTING_SOFTWARE = 'NameProductionSoftware'
 FACT_NAME_AVERAGE_EMPLOYEES = 'AverageNumberEmployeesDuringPeriod'
+FACT_NAME_TURNOVER = 'TurnoverRevenue'
+FACT_NAME_INTANGIBLE_ASSETS = 'IntangibleAssets'
+FACT_NAME_TANGIBLE_ASSETS = ['PropertyPlantEquipment', 'InvestmentProperty',
+                             'BiologicalAssetsNon-current', 'InvestmentsFixedAssets']
+FACT_NAME_EQUITY = 'Equity'
+
 
 # Error Config
 
@@ -36,6 +42,7 @@ def start_end_error(start_key, end_key):
 
 def financial_data_error():
     return "No facts with single dates or units of 'iso4217:GBP'."
+
 
 def dormant_state_error():
     return "No facts relating to dormancy present."
