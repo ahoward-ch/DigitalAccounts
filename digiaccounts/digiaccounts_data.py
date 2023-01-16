@@ -4,7 +4,7 @@
 import logging
 import pandas as pd
 import dateutil
-from digiaccounts.config import *
+import digiaccounts.config as cfg
 from digiaccounts.digiaccounts_util import (
     check_unit_gbp,
     check_name_is_string,
@@ -36,7 +36,7 @@ def get_single_fact(fact_name, xbrl_instance):
                 return fact.value.strip()
             else:
                 return fact.value
-    raise KeyError(fact_name_error(fact_name))
+    raise KeyError(cfg.fact_name_error(fact_name))
 
 
 def get_company_registration(xbrl_instance):
@@ -50,7 +50,7 @@ def get_company_registration(xbrl_instance):
     Returns:
         string: a string containing the company registration number
     """
-    fact_name = FACT_NAME_COMPANY_REGISTRATION
+    fact_name = cfg.FACT_NAME_COMPANY_REGISTRATION
     return get_single_fact(fact_name, xbrl_instance)
 
 
@@ -64,7 +64,7 @@ def get_accounting_software(xbrl_instance):
     Returns:
         str: a string indicating the name of the accounting software used
     """
-    fact_name = FACT_NAME_ACCOUNTING_SOFTWARE
+    fact_name = cfg.FACT_NAME_ACCOUNTING_SOFTWARE
     return get_single_fact(fact_name, xbrl_instance)
 
 
@@ -78,7 +78,7 @@ def get_average_employees(xbrl_instance):
     Returns:
         int: an integer indicating the number of employees
     """
-    fact_name = FACT_NAME_AVERAGE_EMPLOYEES
+    fact_name = cfg.FACT_NAME_AVERAGE_EMPLOYEES
     return get_single_fact(fact_name, xbrl_instance)
 
 
@@ -92,7 +92,7 @@ def get_dormant_state(xbrl_instance):
     Returns:
         bool: a boolian value for determining dormant state of company
     """
-    fact_names = FACT_NAME_DORMANT_STATE
+    fact_names = cfg.FACT_NAME_DORMANT_STATE
     state = False
     for fact_name in fact_names:
         try:
@@ -102,7 +102,7 @@ def get_dormant_state(xbrl_instance):
     if state:
         return state.lower() == 'true'
     else:
-        raise KeyError(dormant_state_error())
+        raise KeyError(cfg.dormant_state_error())
 
 
 def get_startend_period(xbrl_instance):
@@ -117,8 +117,8 @@ def get_startend_period(xbrl_instance):
         start (string): a datetime date object containing the reporting period start date
         end (string): a datetime date object containing the reporting period end date
     """
-    start_key = FACT_NAME_START_DATE
-    end_key = FACT_NAME_END_DATE
+    start_key = cfg.FACT_NAME_START_DATE
+    end_key = cfg.FACT_NAME_END_DATE
 
     start = None
     end = None
@@ -138,7 +138,7 @@ def get_startend_period(xbrl_instance):
     if (start is not None) or (end is not None):
         return start, end
     else:
-        raise KeyError(start_end_error(start_key, end_key))
+        raise KeyError(cfg.start_end_error(start_key, end_key))
 
 
 def get_company_postcode(xbrl_instance):
@@ -152,7 +152,7 @@ def get_company_postcode(xbrl_instance):
     Returns:
         str
     """
-    fact_name = FACT_NAME_POSTAL_CODE
+    fact_name = cfg.FACT_NAME_POSTAL_CODE
 
     post_codes = {}
     pcn = 1
@@ -172,7 +172,7 @@ def get_company_postcode(xbrl_instance):
     elif post_codes:
         return next(iter(post_codes.values())).strip()
     else:
-        raise KeyError(fact_name_error(fact_name))
+        raise KeyError(cfg.fact_name_error(fact_name))
 
 
 def get_financial_facts(xbrl_instance):
@@ -224,7 +224,7 @@ def get_financial_facts(xbrl_instance):
     if names:
         return {'Fact': names, 'Value': values, 'Date': dates}
     else:
-        raise KeyError(financial_data_error)
+        raise KeyError(cfg.financial_data_error)
 
 
 def get_financial_table(xbrl_instance):
@@ -396,6 +396,20 @@ def return_current_previous_from_fact_list(value_date_dict_list, xbrl_instance):
 
 
 def get_current_previous_pairs(xbrl_instance, fact_name, dim_name=None, instant=True):
+    """retrieves fact value pairs for current/previous period (or start/end date)
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the value/date pairs
+        were extracted - used to obtain the start and end period dates
+        fact_name (str): context name of fact to search for
+        dim_name (str, optional): name of fact sub-dimension. Facts with this sub-dimension present will be omitted.
+        Defaults to None.
+        instant (bool, optional): flag for facts with instant date type. If False, will instead look for end date of
+        duration date type. Defaults to True.
+
+    Returns:
+        tuple: values for the current and previous period
+    """
     fact_list = []
 
     for fact in xbrl_instance.facts:
@@ -414,12 +428,13 @@ def get_current_previous_pairs(xbrl_instance, fact_name, dim_name=None, instant=
     if fact_list:
         return return_current_previous_from_fact_list(fact_list, xbrl_instance)
     else:
-        raise KeyError(fact_name_error(fact_name))
+        raise KeyError(cfg.fact_name_error(fact_name))
 
 
 def get_entity_turnover(xbrl_instance):
     """extracts and returns tuple of current and previous turnover from an XBRL file containing finanical accounts
-    information
+    information. Turnover is stored with a duration, not an instant date. This is reflected in the call to
+    get_current_previous_pairs
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
@@ -428,7 +443,7 @@ def get_entity_turnover(xbrl_instance):
     Returns:
         tuple: current and previous turnover
     """
-    fact_name = FACT_NAME_TURNOVER
+    fact_name = cfg.FACT_NAME_TURNOVER
 
     return get_current_previous_pairs(xbrl_instance, fact_name, instant=False)
 
@@ -444,38 +459,91 @@ def get_intangible_assets(xbrl_instance):
     Returns:
         tuple: current and previous intangible assets
     """
-    fact_name = FACT_NAME_INTANGIBLE_ASSETS
+    fact_name = cfg.FACT_NAME_INTANGIBLE_ASSETS
 
     return get_current_previous_pairs(xbrl_instance, fact_name)
 
 
 def get_investment_property(xbrl_instance):
-    fact_name = FACT_NAME_INVESTMENT_PROPERTY
+    """extracts and returns tuple of current and previous investment property value from an XBRL file containing
+    finanical accounts information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous investment property value
+    """
+    fact_name = cfg.FACT_NAME_INVESTMENT_PROPERTY
 
     return get_current_previous_pairs(xbrl_instance, fact_name)
 
 
 def get_investment_assets(xbrl_instance):
-    fact_name = FACT_NAME_INVESTMENT_ASSETS
+    """extracts and returns tuple of current and previous investment assets value from an XBRL file containing finanical
+    accounts information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous investment assets value
+    """
+    fact_name = cfg.FACT_NAME_INVESTMENT_ASSETS
 
     return get_current_previous_pairs(xbrl_instance, fact_name)
 
 
 def get_biological_assets(xbrl_instance):
-    fact_name = FACT_NAME_BIOLOGICAL_ASSETS
+    """extracts and returns tuple of current and previous biological assets value from an XBRL file containing finanical
+    accounts information
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous biological assets value
+    """
+    fact_name = cfg.FACT_NAME_BIOLOGICAL_ASSETS
 
     return get_current_previous_pairs(xbrl_instance, fact_name)
 
 
 def get_plant_equipment(xbrl_instance):
-    fact_name = FACT_NAME_PLANT_EQUIPMENT
-    dim_name = FACT_DIMENSION_PLANT_EQUIPMENT
+    """extracts and returns tuple of current and previous plant property value from an XBRL file containing finanical
+    accounts information. Plant property value has sub-dimensions used for breaking down production plants, equipment
+    and vehicles in the extended profit and loss sheet. These sub-dimensions are explicitly ignored, as reflected in the
+    call to get_current_previous_pairs
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous plant property value
+    """
+    fact_name = cfg.FACT_NAME_PLANT_EQUIPMENT
+    dim_name = cfg.FACT_DIMENSION_PLANT_EQUIPMENT
 
     return get_current_previous_pairs(xbrl_instance, fact_name, dim_name=dim_name)
 
 
 def get_entity_equity(xbrl_instance):
-    fact_name = FACT_NAME_EQUITY
-    dim_name = FACT_DIMENSION_EQUITY
+    """extracts and returns tuple of current and previous balance sheet total from an XBRL file containing finanical
+    accounts information. Equity has sub-dimensions used for breaking down different equity sources. These
+    sub-dimensions are explicitly ignored, as reflected in the call to get_current_previous_pairs
+
+    Args:
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        tuple: current and previous balance sheet total
+    """
+    fact_name = cfg.FACT_NAME_EQUITY
+    dim_name = cfg.FACT_DIMENSION_EQUITY
 
     return get_current_previous_pairs(xbrl_instance, fact_name, dim_name=dim_name)
