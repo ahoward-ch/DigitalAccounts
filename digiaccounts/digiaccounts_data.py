@@ -11,7 +11,8 @@ from digiaccounts.digiaccounts_util import (
     check_string_in_name,
     check_instant_date,
     return_dimension_dict,
-    return_dimension_values
+    return_dimension_values,
+    dimension_in_dimension_dict
 )
 
 
@@ -358,7 +359,7 @@ def get_director_names(xbrl_instance):
     return director_dict
 
 
-def get_current_previous_pairs(value_date_dict_list, xbrl_instance):
+def return_current_previous_from_fact_list(value_date_dict_list, xbrl_instance):
     """return tuple of paired facts associated with starting and ending period when given a list of value/date pairs
     and the XBRL accounts instance they came from
 
@@ -394,6 +395,28 @@ def get_current_previous_pairs(value_date_dict_list, xbrl_instance):
     return current, previous
 
 
+def get_current_previous_pairs(xbrl_instance, fact_name, dim_name=None, instant=True):
+    fact_list = []
+
+    for fact in xbrl_instance.facts:
+        if (
+            (check_name_is_string(fact_name, fact)) and
+            (
+                (dim_name is None) or
+                (not dimension_in_dimension_dict(dim_name, fact))
+            )
+        ):
+            fact_list.append({
+                'value': fact.value,
+                'date': fact.context.instant_date if instant else fact.context.end_date
+            })
+
+    if fact_list:
+        return return_current_previous_from_fact_list(fact_list, xbrl_instance)
+    else:
+        raise KeyError(fact_name_error(fact_name))
+
+
 def get_entity_turnover(xbrl_instance):
     """extracts and returns tuple of current and previous turnover from an XBRL file containing finanical accounts
     information
@@ -407,22 +430,7 @@ def get_entity_turnover(xbrl_instance):
     """
     fact_name = FACT_NAME_TURNOVER
 
-    turnovers = []
-
-    # retrieve all facts with context name TurnoverRevenue and place their value and context end date into a dictionary
-    # then append the dictionary to the turnovers list
-    for fact in xbrl_instance.facts:
-        if check_name_is_string(fact_name, fact):
-            turnovers.append({
-                'value': fact.value,
-                'date': fact.context.end_date
-            })
-
-    # if facts present in turnovers list, get the pair that represent the start and end period turnover
-    if turnovers:
-        return get_current_previous_pairs(turnovers, xbrl_instance)
-    else:
-        raise KeyError(fact_name_error(fact_name))
+    return get_current_previous_pairs(xbrl_instance, fact_name, instant=False)
 
 
 def get_intangible_assets(xbrl_instance):
@@ -438,43 +446,36 @@ def get_intangible_assets(xbrl_instance):
     """
     fact_name = FACT_NAME_INTANGIBLE_ASSETS
 
-    intangibles = []
+    return get_current_previous_pairs(xbrl_instance, fact_name)
 
-    # retrieve all facts with context name IntangibleAssets and place their value and context end date into a dictionary
-    # then append the dictionary to the intangibles list
-    for fact in xbrl_instance.facts:
-        if check_name_is_string(FACT_NAME_INTANGIBLE_ASSETS, fact):
-            intangibles.append({
-                'value': fact.value,
-                'date': fact.context.instant_date
-            })
 
-    # if facts present in turnovers list, get the pair that represent the start and end period intangible assets
-    if intangibles:
-        return get_current_previous_pairs(intangibles, xbrl_instance)
-    else:
-        raise KeyError(fact_name_error(fact_name))
+def get_investment_property(xbrl_instance):
+    fact_name = FACT_NAME_INVESTMENT_PROPERTY
+
+    return get_current_previous_pairs(xbrl_instance, fact_name)
+
+
+def get_investment_assets(xbrl_instance):
+    fact_name = FACT_NAME_INVESTMENT_ASSETS
+
+    return get_current_previous_pairs(xbrl_instance, fact_name)
+
+
+def get_biological_assets(xbrl_instance):
+    fact_name = FACT_NAME_BIOLOGICAL_ASSETS
+
+    return get_current_previous_pairs(xbrl_instance, fact_name)
+
+
+def get_plant_equipment(xbrl_instance):
+    fact_name = FACT_NAME_PLANT_EQUIPMENT
+    dim_name = FACT_DIMENSION_PLANT_EQUIPMENT
+
+    return get_current_previous_pairs(xbrl_instance, fact_name, dim_name=dim_name)
 
 
 def get_entity_equity(xbrl_instance):
-    equity = []
-    for fact in xbrl_instance.facts:
-        if check_name_is_string(FACT_NAME_EQUITY, fact):
-            value = fact.value
-            date = fact.context.instant_date.isoformat()
-            fact_dimensions = return_dimension_dict(fact)
-            if ('EquityClassesDimension' in fact_dimensions):
-                dim = fact_dimensions['EquityClassesDimension']
-            else:
-                dim = None
-            if hasattr(fact, 'unit'):
-                unit = fact.unit.unit
-            else:
-                unit = None
+    fact_name = FACT_NAME_EQUITY
+    dim_name = FACT_DIMENSION_EQUITY
 
-            equity.append([value, date, unit, dim])
-
-    if equity:
-        return equity
-    else:
-        raise KeyError
+    return get_current_previous_pairs(xbrl_instance, fact_name, dim_name=dim_name)

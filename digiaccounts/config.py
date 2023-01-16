@@ -11,9 +11,16 @@ FACT_NAME_ACCOUNTING_SOFTWARE = 'NameProductionSoftware'
 FACT_NAME_AVERAGE_EMPLOYEES = 'AverageNumberEmployeesDuringPeriod'
 FACT_NAME_TURNOVER = 'TurnoverRevenue'
 FACT_NAME_INTANGIBLE_ASSETS = 'IntangibleAssets'
-FACT_NAME_TANGIBLE_ASSETS = ['PropertyPlantEquipment', 'InvestmentProperty',
-                             'BiologicalAssetsNon-current', 'InvestmentsFixedAssets']
+FACT_NAME_PLANT_EQUIPMENT = 'PropertyPlantEquipment'
+FACT_NAME_INVESTMENT_ASSETS = 'InvestmentsFixedAssets'
+FACT_NAME_INVESTMENT_PROPERTY = 'InvestmentProperty'
+FACT_NAME_BIOLOGICAL_ASSETS = 'BiologicalAssets'
 FACT_NAME_EQUITY = 'Equity'
+
+
+# Fact Extra Dimension Keys
+FACT_DIMENSION_PLANT_EQUIPMENT = 'PropertyPlantEquipmentClassesDimension'
+FACT_DIMENSION_EQUITY = 'EquityClassesDimension'
 
 
 # Error Config

@@ -85,3 +85,16 @@ def return_dimension_values(fact):
         list: values from fact dimension attribute dictonary
     """
     return fact.json()['dimensions'].values()
+
+
+def dimension_in_dimension_dict(dimension_name, fact):
+    """returns boolian truth if a particular dimension name is found in the dimensions dictionary
+
+    Args:
+        dimension_name (str): _description_
+        fact (xbrl.instance.<fact>): _description_
+
+    Returns:
+        bool: _description_
+    """
+    return dimension_name in return_dimension_dict(fact)
