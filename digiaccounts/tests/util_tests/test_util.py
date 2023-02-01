@@ -1,6 +1,6 @@
 """unit tests for digiaccounts utility functions"""
 
-from digiaccounts.digiaccounts_data import (
+from digiaccounts.digiaccounts_util import (
     check_unit_gbp,
     check_instant_date,
     check_name_is_string,

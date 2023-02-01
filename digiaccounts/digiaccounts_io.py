@@ -7,14 +7,21 @@ from datetime import datetime
 
 
 from digiaccounts.digiaccounts_data import (
-    get_company_registration,
+    get_entity_registration,
     get_startend_period,
-    get_company_postcode,
+    get_entity_postcode,
     get_dormant_state,
     get_average_employees,
     get_entity_turnover,
-    get_intangible_assets
+    get_intangible_assets,
+    get_investment_property,
+    get_investment_assets,
+    get_biological_assets,
+    get_plant_equipment,
+    get_entity_equity
 )
+
+from digiaccounts.digiaccounts_util import check_fact_value_string_none
 
 
 def get_account_information_dictionary(unique_id, xbrl_instance):
@@ -35,7 +42,7 @@ def get_account_information_dictionary(unique_id, xbrl_instance):
     }
 
     try:
-        account_information['registration_number'] = get_company_registration(xbrl_instance)
+        account_information['registration_number'] = get_entity_registration(xbrl_instance)
     except KeyError as _e:
         logging.error(repr(_e))
         account_information['registration_number'] = None
@@ -51,7 +58,7 @@ def get_account_information_dictionary(unique_id, xbrl_instance):
         return account_information
 
     try:
-        account_information['post_codes'] = get_company_postcode(xbrl_instance)
+        account_information['post_codes'] = get_entity_postcode(xbrl_instance)
     except KeyError as _e:
         logging.warning(repr(_e))
         account_information['post_codes'] = None
@@ -69,22 +76,91 @@ def get_account_information_dictionary(unique_id, xbrl_instance):
         account_information['average_employees'] = None
 
     try:
-        turnover_current, turnover_previous = get_entity_turnover(xbrl_instance)
-        account_information['turnover_current'] = turnover_current
-        account_information['turnover_previous'] = turnover_previous
+        turnover_opening, turnover_closing = get_entity_turnover(xbrl_instance)
+        account_information['turnover_opening'] = turnover_opening
+        account_information['turnover_closing'] = turnover_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['turnover_current'] = None
-        account_information['turnover_previous'] = None
+        account_information['turnover_opening'] = None
+        account_information['turnover_closing'] = None
 
     try:
-        intangible_current, intangible_previous = get_intangible_assets(xbrl_instance)
-        account_information['intangible_assets_current'] = intangible_current
-        account_information['intangible_assets_previous'] = intangible_previous
+        intangible_opening, intangible_closing = get_intangible_assets(xbrl_instance)
+        account_information['intangible_asset_value_opening'] = intangible_opening
+        account_information['intangible_asset_value_closing'] = intangible_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['intabgible_assets_current'] = None
-        account_information['intangible_assets_previous'] = None
+        account_information['intabgible_asset_value_opening'] = None
+        account_information['intangible_asset_value_closing'] = None
+
+    try:
+        investment_property_opening, investment_property_closing = get_investment_property(xbrl_instance)
+        account_information['investment_property_value_opening'] = investment_property_opening
+        account_information['investment_property_value_closing'] = investment_property_closing
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information['investment_property_value_opening'] = None
+        account_information['investment_property_value_closing'] = None
+
+    try:
+        investment_asset_opening, investment_asset_closing = get_investment_assets(xbrl_instance)
+        account_information['investment_asset_value_opening'] = investment_asset_opening
+        account_information['investment_asset_value_closing'] = investment_asset_closing
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information['investment_asset_value_opening'] = None
+        account_information['investment_asset_value_closing'] = None
+
+    try:
+        biological_asset_opening, biological_asset_closing = get_biological_assets(xbrl_instance)
+        account_information['biological_asset_value_opening'] = biological_asset_opening
+        account_information['biological_asset_value_closing'] = biological_asset_closing
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information['biological_asset_value_opening'] = None
+        account_information['biological_asset_value_closing'] = None
+
+    try:
+        plant_equipment_opening, plant_equipment_closing = get_plant_equipment(xbrl_instance)
+        account_information['plant_equipment_value_opening'] = plant_equipment_opening
+        account_information['plant_equipment_value_closing'] = plant_equipment_closing
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information['plant_equipment_value_opening'] = None
+        account_information['plant_equipment_value_closing'] = None
+
+    try:
+        tangible_list_opening = [
+            account_information['investment_property_value_opening'],
+            account_information['investment_asset_value_opening'],
+            account_information['biological_asset_value_opening'],
+            account_information['plant_equipment_value_opening']
+        ]
+        tangible_list_closing = [
+            account_information['investment_property_value_closing'],
+            account_information['investment_asset_value_closing'],
+            account_information['biological_asset_value_closing'],
+            account_information['plant_equipment_value_closing']
+        ]
+        account_information['tangible_asset_value_opening'] = sum(
+            filter(check_fact_value_string_none, [tangible_list_opening])
+        )
+        account_information['tangible_asset_value_closing'] = sum(
+            filter(check_fact_value_string_none, [tangible_list_closing])
+        )
+    except TypeError as _e:
+        logging.warning(repr(_e))
+        account_information['tangible_asset_value_opening'] = None
+        account_information['tangible_asset_value_closing'] = None
+
+    try:
+        equity_opening, equity_closing = get_entity_equity(xbrl_instance)
+        account_information['balance_opening'] = equity_opening
+        account_information['balance_closing'] = equity_closing
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information['balance_opening'] = None
+        account_information['balance_closing'] = None
 
     return account_information
 

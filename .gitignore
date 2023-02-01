@@ -8,3 +8,4 @@ accounts_data/**
 .pytest_cache/**
 **/test_cache/**
 **.csv
+**.ipynb

@@ -31,6 +31,15 @@
             </ix:references>
 
             <ix:resources>
+                <xbrli:context id="FY2019">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:startDate>2019-01-01</xbrli:startDate>
+                        <xbrli:endDate>2019-12-31</xbrli:endDate>
+                    </xbrli:period>
+                </xbrli:context>
                 <xbrli:context id="FY2020">
                     <xbrli:entity>
                         <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
@@ -40,17 +49,41 @@
                         <xbrli:endDate>2020-12-31</xbrli:endDate>
                     </xbrli:period>
                 </xbrli:context>
-                <xbrli:context id="START_2020">
+                <xbrli:context id="END_2019">
                     <xbrli:entity>
                         <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
                     </xbrli:entity>
                     <xbrli:period>
-                        <xbrli:instant>2020-01-01</xbrli:instant>
+                        <xbrli:instant>2019-12-31</xbrli:instant>
                     </xbrli:period>
                 </xbrli:context>
                 <xbrli:context id="END_2020">
                     <xbrli:entity>
                         <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:instant>2020-12-31</xbrli:instant>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:context id="END_2019_PPE_VEHICLES">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                        <xbrli:segment>
+                            <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:Vehicles
+                            </xbrldi:explicitMember>
+                        </xbrli:segment>
+                    </xbrli:entity>
+                    <xbrli:period>
+                        <xbrli:instant>2019-12-31</xbrli:instant>
+                    </xbrli:period>
+                </xbrli:context>
+                <xbrli:context id="END_2020_PPE_VEHICLES">
+                    <xbrli:entity>
+                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
+                        <xbrli:segment>
+                            <xbrldi:explicitMember dimension="core:PropertyPlantEquipmentClassesDimension">core:Vehicles
+                            </xbrldi:explicitMember>
+                        </xbrli:segment>
                     </xbrli:entity>
                     <xbrli:period>
                         <xbrli:instant>2020-12-31</xbrli:instant>
@@ -82,58 +115,6 @@
                         <xbrli:endDate>2020-12-31</xbrli:endDate>
                     </xbrli:period>
                 </xbrli:context>
-                <xbrli:context id="creditorWithMaturitiesMoreStart">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">
-                                core:MoreThanFiveYears
-                            </xbrldi:explicitMember>
-                            <xbrldi:explicitMember dimension="core:FinancialInstrumentCurrentNon-currentDimension">
-                                core:Non-currentFinancialInstruments</xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-01-01</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="creditorWithoutMaturitiesMoreEnd">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="core:FinancialInstrumentCurrentNon-currentDimension">
-                                core:Non-currentFinancialInstruments</xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-12-31</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="creditorWithMaturitiesLessStart">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="core:MaturitiesOrExpirationPeriodsDimension">
-                                core:WithinOneYear
-                            </xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-01-01</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="creditorWithoutMaturitiesLessEnd">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="core:FinancialInstrumentCurrentNon-currentDimension">
-                                core:CurrentFinancialInstruments</xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-12-31</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
                 <xbrli:context id="registeredAddress">
                     <xbrli:entity>
                         <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
@@ -148,74 +129,6 @@
                         <xbrli:endDate>2020-12-01</xbrli:endDate>
                     </xbrli:period>
                 </xbrli:context>
-                <xbrli:context id="GeneralShareTemplate">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="business:EntityShareClassesDimension">
-                                business:OrdinaryShareClass1
-                            </xbrldi:explicitMember>
-                            <xbrldi:typedMember dimension="core:X-IndividualIssueSharesGroupingDimension">
-                                <core:XIndividualIssueOfSharesGroupingDimension.domain>1
-                                </core:XIndividualIssueOfSharesGroupingDimension.domain>
-                            </xbrldi:typedMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:startDate>2020-01-01</xbrli:startDate>
-                        <xbrli:endDate>2020-12-31</xbrli:endDate>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="ShareTypeTemplate">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="business:EntityShareClassesDimension">
-                                business:OrdinaryShareClass1
-                            </xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-12-31</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="ShareTypeTemplatePrev">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="business:EntityShareClassesDimension">
-                                business:OrdinaryShareClass1
-                            </xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-01-01</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="EquityShareCapitalStart">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:ShareCapital
-                            </xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-01-01</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
-                <xbrli:context id="EquityShareCapitalEnd">
-                    <xbrli:entity>
-                        <xbrli:identifier scheme="http://www.companieshouse.gov.uk/">0000000000</xbrli:identifier>
-                        <xbrli:segment>
-                            <xbrldi:explicitMember dimension="core:EquityClassesDimension">core:ShareCapital
-                            </xbrldi:explicitMember>
-                        </xbrli:segment>
-                    </xbrli:entity>
-                    <xbrli:period>
-                        <xbrli:instant>2020-12-31</xbrli:instant>
-                    </xbrli:period>
-                </xbrli:context>
                 <xbrli:unit id="gbp">
                     <xbrli:measure>iso4217:GBP</xbrli:measure>
                 </xbrli:unit>
@@ -228,18 +141,11 @@
             </ix:resources>
 
             <ix:hidden>
-                <ix:nonNumeric contextRef="START_2020" format="ixt:datelonguk"
+                <ix:nonNumeric contextRef="END_2019" format="ixt:datelonguk"
                     name="business:StartDateForPeriodCoveredByReport">01 January 2020</ix:nonNumeric>
                 <ix:nonNumeric contextRef="END_2020" format="ixt:datelonguk"
                     name="business:EndDateForPeriodCoveredByReport">31 December 2020</ix:nonNumeric>
                 <ix:nonNumeric contextRef="END_2020" name="business:NameProductionSoftware">VsCode</ix:nonNumeric>
-                <ix:nonFraction contextRef="GeneralShareTemplate" decimals="0" format="ixt2:numdotdecimal"
-                    name="core:ParValueShare" scale="0" unitRef="pure" xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">
-                    1.00000
-                </ix:nonFraction>
-                <ix:nonFraction id='shn1' contextRef="ShareTypeTemplatePrev" decimals="0" format="ixt2:numdotdecimal"
-                    name="core:NominalValueSharesIssuedSpecificShareIssue" scale="0" unitRef="gbp"
-                    xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">0.00000</ix:nonFraction>
                 <ix:nonNumeric contextRef="END_2020" name="business:EntityDormantTruefalse">false</ix:nonNumeric>
 
             </ix:hidden>
@@ -268,141 +174,127 @@
         <ix:nonNumeric contextRef="registeredAddress" name="business:PostalCodeZip">AA1 1AA</ix:nonNumeric>
     </div>
 
+    <div>
+        The average number of employees was
+        <ix:nonFraction contextRef="END_2020" decimals="0" name="core:AverageNumberEmployeesDuringPeriod"
+            unitRef="pure">5
+        </ix:nonFraction>.
+    </div>
+
     <table>
         <tr>
             <th></th>
-            <th>01 Jan 2020</th>
-            <th>31 Dec 2020</th>
+            <th>2019</th>
+            <th>2020</th>
         </tr>
         <tr>
             <th>Concept</th>
-            <th>£</th>
-            <th>£</th>
+            <th>£ (mil)</th>
+            <th>£ (mil)</th>
         </tr>
         <tr>
-            <td>Cash on Hand</td>
+            <td>Turnover</td>
             <td>
-                <ix:nonFraction id='coh1' name="core:CashBankOnHand" contextRef="START_2020" unitRef="gbp" decimals="-6"
-                    scale="6" format="ixt2:numdotdecimal">
-                    12,345
-                </ix:nonFraction>
+                <ix:nonFraction id="tnr1" name="core:TurnoverRevenue" contextRef="FY2019" unitRef="gbp" decimals="-6"
+                    scale="6" format="ixt:numcommadot">010</ix:nonFraction>
             </td>
             <td>
-                <ix:nonFraction id='coh2' name="core:CashBankOnHand" contextRef="END_2020" unitRef="gbp" decimals="-6"
-                    scale="6" format="ixt2:numdotdecimal">
-                    12,345
+                <ix:nonFraction id="tnr2" name="core:TurnoverRevenue" contextRef="FY2020" unitRef="gbp" decimals="-6"
+                    scale="6" format="ixt:numcommadot">020</ix:nonFraction>
+            </td>
+        </tr>
+        <tr>
+            <td>Intangible assets</td>
+            <td>
+                <ix:nonFraction id='int1' name="core:IntangibleAssets" contextRef="END_2019" unitRef="gbp" decimals="-6"
+                    scale="6">
+                    110</ix:nonFraction>
+            </td>
+            <td>
+                <ix:nonFraction id='int2' name="core:IntangibleAssets" contextRef="END_2020" unitRef="gbp" decimals="-6"
+                    scale="6">120
                 </ix:nonFraction>
             </td>
         </tr>
         <tr>
             <td>Investment Properties</td>
             <td>
-                <ix:nonFraction id='inv1' name="core:InvestmentProperty" contextRef="START_2020" unitRef="gbp"
+                <ix:nonFraction id='inv1' name="core:InvestmentProperty" contextRef="END_2019" unitRef="gbp"
                     decimals="-6" scale="6" format="ixt2:numdotdecimal">
-                    9,876
+                    210
                 </ix:nonFraction>
             </td>
             <td>
                 <ix:nonFraction id='inv2' name="core:InvestmentProperty" contextRef="END_2020" unitRef="gbp"
                     decimals="-6" scale="6" format="ixt2:numdotdecimal">
-                    9,876
+                    220
                 </ix:nonFraction>
             </td>
         </tr>
         <tr>
-            <td>Creditors: due within one year</td>
+            <td>Investment Assets</td>
             <td>
-                <ix:nonFraction id='cwy1' name="core:Creditors" contextRef="creditorWithMaturitiesLessStart"
-                    unitRef="gbp" decimals="-6" scale="1" format="ixt2:numdotdecimal">
-                    1,000
+                <ix:nonFraction id='ina1' name="core:InvestmentsFixedAssets" contextRef="END_2019" unitRef="gbp"
+                    decimals="-6" scale="6" format="ixt2:numdotdecimal">
+                    310
                 </ix:nonFraction>
             </td>
             <td>
-                <ix:nonFraction id='cwy2' name="core:Creditors" contextRef="creditorWithoutMaturitiesLessEnd"
-                    unitRef="gbp" decimals="-6" scale="1" format="ixt2:numdotdecimal">
-                    1,000
-                </ix:nonFraction>
-            </td>
-        </tr>
-        <tr>
-            <td>Creditors: due after one year</td>
-            <td>
-                <ix:nonFraction id='cwy1' name="core:Creditors" contextRef="creditorWithMaturitiesMoreStart"
-                    unitRef="gbp" decimals="-6" scale="1" format="ixt2:numdotdecimal">
-                    2,000
-                </ix:nonFraction>
-            </td>
-            <td>
-                <ix:nonFraction id='cwy2' name="core:Creditors" contextRef="creditorWithoutMaturitiesMoreEnd"
-                    unitRef="gbp" decimals="-6" scale="1" format="ixt2:numdotdecimal">
-                    2,000
+                <ix:nonFraction id='ina2' name="core:InvestmentsFixedAssets" contextRef="END_2020" unitRef="gbp"
+                    decimals="-6" scale="6" format="ixt2:numdotdecimal">
+                    320
                 </ix:nonFraction>
             </td>
         </tr>
         <tr>
-            <th>Capital Example</th>
-        </tr>
-        <tr>
-            <td>Called up share capital</td>
+            <td>Biological Assets</td>
             <td>
-                <ix:nonFraction id="shc1" contextRef="EquityShareCapitalStart" decimals="0" name="core:Equity" scale="0"
-                    unitRef="gbp" xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">0
+                <ix:nonFraction id='bio1' name="core:BiologicalAssets" contextRef="END_2019" unitRef="gbp" decimals="-6"
+                    scale="6" format="ixt2:numdotdecimal">
+                    410
                 </ix:nonFraction>
             </td>
             <td>
-                <ix:nonFraction id="shc2" contextRef="EquityShareCapitalEnd" decimals="0" name="core:Equity" scale="0"
-                    unitRef="gbp" xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">100
+                <ix:nonFraction id='bio2' name="core:BiologicalAssets" contextRef="END_2020" unitRef="gbp" decimals="-6"
+                    scale="6" format="ixt2:numdotdecimal">
+                    420
                 </ix:nonFraction>
             </td>
-
-        </tr>
-    </table>
-
-    <h3>Called Up Share Capital</h3>
-    <div>Allotted, issued and fully paid:</div>
-    <table>
-        <tr>
-            <th>Number</th>
-            <th>Class</th>
-            <th>Nominal Value £</th>
-            <th>£</th>
         </tr>
         <tr>
+            <td>Property Plant Equipment - Vehicles</td>
             <td>
-                <ix:nonFraction id='shfp' contextRef="ShareTypeTemplate" decimals="0"
-                    name="core:NumberSharesIssuedFullyPaid" scale="0" unitRef="shares"
-                    xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">100</ix:nonFraction>
+                <ix:nonFraction id="ppv1" name="core:PropertyPlantEquipment" contextRef="END_2019_PPE_VEHICLES"
+                    unitRef="gbp" decimals="-6" format="ixt2:numdotdecimal">511</ix:nonFraction>
             </td>
             <td>
-                <ix:nonNumeric id='shtp' contextRef="ShareTypeTemplate" name="business:DescriptionShareType"
-                    xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">Ordinary</ix:nonNumeric>
+                <ix:nonFraction id="ppv2" name="core:PropertyPlantEquipment" contextRef="END_2020_PPE_VEHICLES"
+                    unitRef="gbp" decimals="-6" format="ixt2:numdotdecimal">521</ix:nonFraction>
+            </td>
+        </tr>
+        <tr>
+            <td>Property Plant Equipment</td>
+            <td>
+                <ix:nonFraction id="ppe1" name="core:PropertyPlantEquipment" contextRef="END_2019" unitRef="gbp"
+                    decimals="-6" scale="6" format="ixt2:numdotdecimal">510</ix:nonFraction>
             </td>
             <td>
-                <ix:nonFraction id='shnv' contextRef="ShareTypeTemplate" decimals="0" format="ixt2:numdotdecimal"
-                    name="core:NominalValueSharesIssuedSpecificShareIssue" scale="0" unitRef="gbp"
-                    xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">1.00000</ix:nonFraction>
+                <ix:nonFraction id="ppe2" name="core:PropertyPlantEquipment" contextRef="END_2020" unitRef="gbp"
+                    decimals="-6" scale="6" format="ixt2:numdotdecimal">520</ix:nonFraction>
+            </td>
+        </tr>
+        <tr>
+            <td>Balance</td>
+            <td>
+                <ix:nonFraction id="eqt1" name="core:Equity" contextRef="END_2019" unitRef="gbp" decimals="-6" scale="6"
+                    format="ixt2:numdotdecimal">610</ix:nonFraction>
             </td>
             <td>
-                <ix:nonFraction contextRef="ShareTypeTemplate" decimals="0" name="core:NumberSharesIssuedFullyPaid"
-                    scale="0" unitRef="shares" xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">100</ix:nonFraction>
+                <ix:nonFraction id="eqt2" name="core:Equity" contextRef="END_2020" unitRef="gbp" decimals="-6" scale="6"
+                    format="ixt2:numdotdecimal">620</ix:nonFraction>
             </td>
         </tr>
     </table>
-    <ix:nonFraction id='shis' contextRef="GeneralShareTemplate" decimals="0"
-        name="core:NumberSharesIssuedSpecificShareIssue" scale="0" unitRef="shares"
-        xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">100</ix:nonFraction> <span class="ta_10">Ordinary shares of £1
-        each
-        were allotted and fully paid for </span>
-    <ix:nonNumeric id='shri' contextRef="GeneralShareTemplate" name="core:DescriptionReasonsForSpecificShareIssue"
-        xmlns:ix="http://www.xbrl.org/2013/inlineXBRL">cash at par</ix:nonNumeric> <span class="ta_10">during the
-        period.
-    </span>
-
-    <div>
-        The average number of employees was
-        <ix:nonFraction contextRef="END_2020" decimals="0" name="core:AverageNumberEmployeesDuringPeriod"
-            unitRef="pure">5</ix:nonFraction>.
-    </div>
 
 </body>
 

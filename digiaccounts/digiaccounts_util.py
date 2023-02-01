@@ -98,3 +98,17 @@ def dimension_in_dimension_dict(dimension_name, fact):
         bool: _description_
     """
     return dimension_name in return_dimension_dict(fact)
+
+def check_fact_value_string_none(value):
+    """check if a given fact value is a float, a string or a None value, and return bools or raise errors
+
+    Args:
+        value (_type_): _description_
+    """
+    if isinstance(value, str):
+        _s = 'One or more tangible asset facts not transformed from str to float. Unable to calculate total value.'
+        raise TypeError(_s)
+    elif value is not None:
+        return True
+    else:
+        return False
