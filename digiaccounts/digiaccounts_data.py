@@ -185,7 +185,7 @@ def return_openclose_from_fact_list(value_date_dict_list, xbrl_instance):
     """return tuple of paired facts associated with starting and ending period when given a list of value/date pairs
     and the XBRL accounts instance they came from
 
-    e.g. return current and previous turnover
+    e.g. return closing and opening turnover
 
     Args:
         value_date_dict_list (list): list of value/date pairs (as dict) of type float and datetime
@@ -193,32 +193,32 @@ def return_openclose_from_fact_list(value_date_dict_list, xbrl_instance):
         were extracted - used to obtain the start and end period dates
 
     Returns:
-        tuple: values for the current and previous period
+        tuple: values for the closing and opening period
     """
     start, end = get_startend_period(xbrl_instance)
 
-    current = None
-    previous = None
+    closing = None
+    opening = None
 
     for item in value_date_dict_list:
         if (
-            (previous is None)
+            (opening is None)
             and (start is not None)
             and (item['date'] <= dateutil.parser.parse(start).date())
         ):
-            previous = item['value']
+            opening = item['value']
         elif (
-            (current is None)
+            (closing is None)
             and (item['date'] >= dateutil.parser.parse(end).date())
         ):
-            current = item['value']
+            closing = item['value']
         else:
             pass
-    return current, previous
+    return opening, closing
 
 
 def get_openclose_pairs(xbrl_instance, fact_name, dim_name=None, instant=True):
-    """retrieves fact value pairs for current/previous period (or start/end date)
+    """retrieves fact value pairs for closing/opening period (or start/end date)
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the value/date pairs
@@ -230,7 +230,7 @@ def get_openclose_pairs(xbrl_instance, fact_name, dim_name=None, instant=True):
         duration date type. Defaults to True.
 
     Returns:
-        tuple: values for the current and previous period
+        tuple: values for the closing and opening period
     """
     _s = "Searching instance for opening/closing values for fact: '{fact_name}'"
     logging.info(_s)
@@ -256,16 +256,16 @@ def get_openclose_pairs(xbrl_instance, fact_name, dim_name=None, instant=True):
 
 
 def get_entity_turnover(xbrl_instance):
-    """extracts and returns tuple of current and previous turnover from an XBRL file containing finanical accounts
+    """extracts and returns tuple of closing and opening turnover from an XBRL file containing finanical accounts
     information. Turnover is stored with a duration, not an instant date. This is reflected in the call to
-    get_current_previous_pairs
+    get_closing_opening_pairs
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
         to be extracted
 
     Returns:
-        tuple: current and previous turnover
+        tuple: closing and opening turnover
     """
     fact_name = cfg.FACT_NAME_TURNOVER
 
@@ -273,7 +273,7 @@ def get_entity_turnover(xbrl_instance):
 
 
 def get_intangible_assets(xbrl_instance):
-    """extracts and returns tuple of current and previous intangible assets from an XBRL file containing finanical
+    """extracts and returns tuple of closing and opening intangible assets from an XBRL file containing finanical
     accounts information
 
     Args:
@@ -281,7 +281,7 @@ def get_intangible_assets(xbrl_instance):
         to be extracted
 
     Returns:
-        tuple: current and previous intangible assets
+        tuple: closing and opening intangible assets
     """
     fact_name = cfg.FACT_NAME_INTANGIBLE_ASSETS
 
@@ -289,7 +289,7 @@ def get_intangible_assets(xbrl_instance):
 
 
 def get_investment_property(xbrl_instance):
-    """extracts and returns tuple of current and previous investment property value from an XBRL file containing
+    """extracts and returns tuple of closing and opening investment property value from an XBRL file containing
     finanical accounts information
 
     Args:
@@ -297,7 +297,7 @@ def get_investment_property(xbrl_instance):
         to be extracted
 
     Returns:
-        tuple: current and previous investment property value
+        tuple: closing and opening investment property value
     """
     fact_name = cfg.FACT_NAME_INVESTMENT_PROPERTY
 
@@ -305,7 +305,7 @@ def get_investment_property(xbrl_instance):
 
 
 def get_investment_assets(xbrl_instance):
-    """extracts and returns tuple of current and previous investment assets value from an XBRL file containing finanical
+    """extracts and returns tuple of closing and opening investment assets value from an XBRL file containing finanical
     accounts information
 
     Args:
@@ -313,7 +313,7 @@ def get_investment_assets(xbrl_instance):
         to be extracted
 
     Returns:
-        tuple: current and previous investment assets value
+        tuple: closing and opening investment assets value
     """
     fact_name = cfg.FACT_NAME_INVESTMENT_ASSETS
 
@@ -321,7 +321,7 @@ def get_investment_assets(xbrl_instance):
 
 
 def get_biological_assets(xbrl_instance):
-    """extracts and returns tuple of current and previous biological assets value from an XBRL file containing finanical
+    """extracts and returns tuple of closing and opening biological assets value from an XBRL file containing finanical
     accounts information
 
     Args:
@@ -329,7 +329,7 @@ def get_biological_assets(xbrl_instance):
         to be extracted
 
     Returns:
-        tuple: current and previous biological assets value
+        tuple: closing and opening biological assets value
     """
     fact_name = cfg.FACT_NAME_BIOLOGICAL_ASSETS
 
@@ -337,17 +337,17 @@ def get_biological_assets(xbrl_instance):
 
 
 def get_plant_equipment(xbrl_instance):
-    """extracts and returns tuple of current and previous plant property value from an XBRL file containing finanical
+    """extracts and returns tuple of closing and opening plant property value from an XBRL file containing finanical
     accounts information. Plant property value has sub-dimensions used for breaking down production plants, equipment
     and vehicles in the extended profit and loss sheet. These sub-dimensions are explicitly ignored, as reflected in the
-    call to get_current_previous_pairs
+    call to get_closing_opening_pairs
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
         to be extracted
 
     Returns:
-        tuple: current and previous plant property value
+        tuple: closing and opening plant property value
     """
     fact_name = cfg.FACT_NAME_PLANT_EQUIPMENT
     dim_name = cfg.FACT_DIMENSION_PLANT_EQUIPMENT
@@ -356,16 +356,16 @@ def get_plant_equipment(xbrl_instance):
 
 
 def get_entity_equity(xbrl_instance):
-    """extracts and returns tuple of current and previous balance sheet total from an XBRL file containing finanical
+    """extracts and returns tuple of closing and opening balance sheet total from an XBRL file containing finanical
     accounts information. Equity has sub-dimensions used for breaking down different equity sources. These
-    sub-dimensions are explicitly ignored, as reflected in the call to get_current_previous_pairs
+    sub-dimensions are explicitly ignored, as reflected in the call to get_closing_opening_pairs
 
     Args:
         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
         to be extracted
 
     Returns:
-        tuple: current and previous balance sheet total
+        tuple: closing and opening balance sheet total
     """
     fact_name = cfg.FACT_NAME_EQUITY
     dim_name = cfg.FACT_DIMENSION_EQUITY
@@ -399,9 +399,9 @@ def get_entity_equity(xbrl_instance):
 #                     else:
 #                         period = 'DueAfterOneYear'
 #                         names.append(fact.concept.name + period)
-#                 elif 'FinancialInstrumentCurrentNon-currentDimension' in fact_dimensions:
-#                     if (fact_dimensions['FinancialInstrumentCurrentNon-currentDimension']
-#                             == 'CurrentFinancialInstruments'):
+#                 elif 'FinancialInstrumentclosingNon-closingDimension' in fact_dimensions:
+#                     if (fact_dimensions['FinancialInstrumentclosingNon-closingDimension']
+#                             == 'closingFinancialInstruments'):
 #                         period = 'DueWithinOneYear'
 #                         names.append(fact.concept.name + period)
 #                     else:
@@ -453,7 +453,7 @@ def get_entity_equity(xbrl_instance):
 # def get_entity_address(xbrl_instance):
 #     """extracts and returns the registered entity address from an XBRL file instance of accounts information
 
-#     DEPRECIATEDTODO: currently non-functional for accounts that have multiple addresses of differing lengths
+#     DEPRECIATEDTODO: closingly non-functional for accounts that have multiple addresses of differing lengths
 
 #     Args:
 #         xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which the entity address
@@ -484,7 +484,7 @@ def get_entity_equity(xbrl_instance):
 #     """create list for any share data contained within the accounts.
 
 #     DEPRECIATEDTODO:
-#         current extent and type of share information contained within accounts is unknown. At present, procedure is to
+#         closing extent and type of share information contained within accounts is unknown. At present, procedure is to
 #         just return a list of any possible share information. Once full scope is understood, it will be presented in a
 #         better format.
 
