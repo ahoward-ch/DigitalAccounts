@@ -143,10 +143,10 @@ def get_account_information_dictionary(unique_id, xbrl_instance):
             account_information['plant_equipment_value_closing']
         ]
         account_information['tangible_asset_value_opening'] = sum(
-            filter(check_fact_value_string_none, [tangible_list_opening])
+            filter(check_fact_value_string_none, tangible_list_opening)
         )
         account_information['tangible_asset_value_closing'] = sum(
-            filter(check_fact_value_string_none, [tangible_list_closing])
+            filter(check_fact_value_string_none, tangible_list_closing)
         )
     except TypeError as _e:
         logging.warning(repr(_e))
