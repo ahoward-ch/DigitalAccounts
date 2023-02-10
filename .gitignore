@@ -9,3 +9,5 @@ accounts_data/**
 **/test_cache/**
 **.csv
 **.ipynb
+**.ini
+**.temp

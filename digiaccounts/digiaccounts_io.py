@@ -4,6 +4,8 @@ documents"""
 import uuid
 import logging
 from datetime import datetime
+import oracledb
+import pymongo
 
 
 from digiaccounts.digiaccounts_data import (
@@ -21,10 +23,10 @@ from digiaccounts.digiaccounts_data import (
     get_entity_equity
 )
 
-from digiaccounts.digiaccounts_util import check_fact_value_string_none
+from digiaccounts.digiaccounts_util import check_fact_value_string_none, return_data_link_credentials
 
 
-def get_account_information_dictionary(unique_id, xbrl_instance):
+def get_account_information_dictionary(unique_id, filing_date, xbrl_instance):
     """use functions from digiaccouts_data to extract important facts from XBRL documents and return dictionary of
     results
 
@@ -38,7 +40,8 @@ def get_account_information_dictionary(unique_id, xbrl_instance):
     """
 
     account_information = {
-        '_id': unique_id
+        '_id': unique_id,
+        'filing_date': filing_date
     }
 
     try:
@@ -213,7 +216,7 @@ def format_end_period(end_period):
     return datetime.strptime(end_period, "%Y%m%d").date().isoformat()
 
 
-def get_uuid(registration, end_period):
+def get_uuid(registration, filing_date):
     """generates a UUID from a registration number and an iso formatted end period date
 
     Args:
@@ -223,7 +226,7 @@ def get_uuid(registration, end_period):
     Returns:
         str: UUID in hexadecimal format
     """
-    return uuid.uuid5(uuid.NAMESPACE_DNS, '_'.join((registration, end_period))).hex
+    return uuid.uuid5(uuid.NAMESPACE_DNS, '_'.join((registration, filing_date))).hex
 
 
 def create_unique_id(filename):
@@ -237,3 +240,25 @@ def create_unique_id(filename):
     """
     registration, end_period = get_file_registration_period_from_filename(filename)
     return get_uuid(registration, end_period)
+
+
+def return_data_source_connection():
+    credentials = return_data_link_credentials('DataSource')
+    username = credentials.get('username')
+    password = credentials.get('password')
+    host = credentials.get('host')
+    port = credentials.getint('port')
+    protocol = credentials.get('protocol')
+    name = credentials.get('name')
+
+    params = oracledb.ConnectParams(host=host, port=port, protocol=protocol, service_name=name)
+    return oracledb.connect(user=username, password=password, params=params)
+
+
+def return_data_target_connection():
+    credentials = return_data_link_credentials('DataTargetAdmin')
+    username = credentials.get('username')
+    password = credentials.get('password')
+    _s = f'mongodb+srv://{username}:{password}@cluster0-pl-0.u1nnh.mongodb.net/test?authSource=admin&replicaSet=atlas-mh1x8w-shard-0&readPreference=primary'
+
+    return pymongo.MongoClient(_s)
