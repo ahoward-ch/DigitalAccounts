@@ -93,7 +93,7 @@ def get_account_information_dictionary(unique_id, filing_date, xbrl_instance):
         account_information['intangible_asset_value_closing'] = intangible_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['intabgible_asset_value_opening'] = None
+        account_information['intangible_asset_value_opening'] = None
         account_information['intangible_asset_value_closing'] = None
 
     try:
