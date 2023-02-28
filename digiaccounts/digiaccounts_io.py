@@ -4,6 +4,7 @@ documents"""
 import uuid
 import logging
 from datetime import datetime
+import dateutil.parser
 import oracledb
 import pymongo
 
@@ -20,13 +21,16 @@ from digiaccounts.digiaccounts_data import (
     get_investment_assets,
     get_biological_assets,
     get_plant_equipment,
-    get_entity_equity
+    get_entity_equity,
+    get_accounting_software,
+    get_entity_registered_name
 )
 
 from digiaccounts.digiaccounts_util import check_fact_value_string_none, return_data_link_credentials
+from digiaccounts import config as cfg
 
 
-def get_account_information_dictionary(unique_id, filing_date, xbrl_instance):
+def get_account_information_dictionary(unique_id: str, filing_date: datetime.date or str, xbrl_instance):
     """use functions from digiaccouts_data to extract important facts from XBRL documents and return dictionary of
     results
 
@@ -40,130 +44,223 @@ def get_account_information_dictionary(unique_id, filing_date, xbrl_instance):
     """
 
     account_information = {
-        '_id': unique_id,
-        'filing_date': filing_date
+        '_id': unique_id
     }
 
+    if isinstance(filing_date, datetime):
+        account_information['filing_date'] = filing_date
+    elif isinstance(filing_date, str):
+        account_information['filing_date'] = dateutil.parser.parse(filing_date)
+    else:
+        pass
+
     try:
-        account_information['registration_number'] = get_entity_registration(xbrl_instance)
+        account_information[cfg.MONGO_KEY_ENTITY_REGISTRATION] = get_entity_registration(xbrl_instance)
     except KeyError as _e:
         logging.error(repr(_e))
-        account_information['registration_number'] = None
+        account_information[cfg.MONGO_KEY_ENTITY_REGISTRATION] = None
         return account_information
 
     try:
         period_starting, period_ending = get_startend_period(xbrl_instance)
-        account_information['period_ending'] = period_ending
-        account_information['period_starting'] = period_starting
+        account_information[cfg.MONGO_KEY_END_DATE] = period_ending
+        account_information[cfg.MONGO_KEY_START_DATE] = period_starting
     except KeyError as _e:
         logging.error(repr(_e))
-        account_information['period_ending'] = None
+        account_information[cfg.MONGO_KEY_END_DATE] = None
         return account_information
 
     try:
-        account_information['post_codes'] = get_entity_postcode(xbrl_instance)
+        account_information[cfg.MONGO_KEY_POSTAL_CODE] = get_entity_postcode(xbrl_instance)
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['post_codes'] = None
+        account_information[cfg.MONGO_KEY_POSTAL_CODE] = None
 
     try:
-        account_information['is_dormant'] = get_dormant_state(xbrl_instance)
+        account_information[cfg.MONGO_KEY_DORMANT_STATE] = get_dormant_state(xbrl_instance)
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['is_dormant'] = None
+        account_information[cfg.MONGO_KEY_DORMANT_STATE] = None
 
     try:
-        account_information['average_employees'] = get_average_employees(xbrl_instance)
+        account_information[cfg.MONGO_KEY_AVERAGE_EMPLOYEES] = get_average_employees(xbrl_instance)
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['average_employees'] = None
+        account_information[cfg.MONGO_KEY_AVERAGE_EMPLOYEES] = None
 
     try:
         turnover_opening, turnover_closing = get_entity_turnover(xbrl_instance)
-        account_information['turnover_opening'] = turnover_opening
-        account_information['turnover_closing'] = turnover_closing
+        account_information[cfg.MONGO_KEY_TURNOVER_CLOSING_PREVIOUS] = turnover_opening
+        account_information[cfg.MONGO_KEY_TURNOVER_CLOSING_CURRENT] = turnover_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['turnover_opening'] = None
-        account_information['turnover_closing'] = None
+        account_information[cfg.MONGO_KEY_TURNOVER_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_TURNOVER_CLOSING_CURRENT] = None
 
     try:
         intangible_opening, intangible_closing = get_intangible_assets(xbrl_instance)
-        account_information['intangible_asset_value_opening'] = intangible_opening
-        account_information['intangible_asset_value_closing'] = intangible_closing
+        account_information[cfg.MONGO_KEY_INTANGIBLE_ASSETS_CLOSING_PREVIOUS] = intangible_opening
+        account_information[cfg.MONGO_KEY_INTANGIBLE_ASSETS_CLOSING_CURRENT] = intangible_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['intangible_asset_value_opening'] = None
-        account_information['intangible_asset_value_closing'] = None
+        account_information[cfg.MONGO_KEY_INTANGIBLE_ASSETS_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_INTANGIBLE_ASSETS_CLOSING_CURRENT] = None
 
     try:
         investment_property_opening, investment_property_closing = get_investment_property(xbrl_instance)
-        account_information['investment_property_value_opening'] = investment_property_opening
-        account_information['investment_property_value_closing'] = investment_property_closing
+        account_information[cfg.MONGO_KEY_INVESTMENT_ASSETS_CLOSING_PREVIOUS] = investment_property_opening
+        account_information[cfg.MONGO_KEY_INVESTMENT_ASSETS_CLOSING_CURRENT] = investment_property_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['investment_property_value_opening'] = None
-        account_information['investment_property_value_closing'] = None
+        account_information[cfg.MONGO_KEY_INVESTMENT_ASSETS_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_INVESTMENT_ASSETS_CLOSING_CURRENT] = None
 
     try:
         investment_asset_opening, investment_asset_closing = get_investment_assets(xbrl_instance)
-        account_information['investment_asset_value_opening'] = investment_asset_opening
-        account_information['investment_asset_value_closing'] = investment_asset_closing
+        account_information[cfg.MONGO_KEY_INVESTMENT_PROPERTY_CLOSING_PREVIOUS] = investment_asset_opening
+        account_information[cfg.MONGO_KEY_INVESTMENT_PROPERTY_CLOSING_CURRENT] = investment_asset_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['investment_asset_value_opening'] = None
-        account_information['investment_asset_value_closing'] = None
+        account_information[cfg.MONGO_KEY_INVESTMENT_PROPERTY_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_INVESTMENT_PROPERTY_CLOSING_CURRENT] = None
 
     try:
         biological_asset_opening, biological_asset_closing = get_biological_assets(xbrl_instance)
-        account_information['biological_asset_value_opening'] = biological_asset_opening
-        account_information['biological_asset_value_closing'] = biological_asset_closing
+        account_information[cfg.MONGO_KEY_BIOLOGICAL_ASSETS_CLOSING_PREVIOUS] = biological_asset_opening
+        account_information[cfg.MONGO_KEY_BIOLOGICAL_ASSETS_CLOSING_CURRENT] = biological_asset_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['biological_asset_value_opening'] = None
-        account_information['biological_asset_value_closing'] = None
+        account_information[cfg.MONGO_KEY_BIOLOGICAL_ASSETS_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_BIOLOGICAL_ASSETS_CLOSING_CURRENT] = None
 
     try:
         plant_equipment_opening, plant_equipment_closing = get_plant_equipment(xbrl_instance)
-        account_information['plant_equipment_value_opening'] = plant_equipment_opening
-        account_information['plant_equipment_value_closing'] = plant_equipment_closing
+        account_information[cfg.MONGO_KEY_PLANT_EQUIPMENT_CLOSING_PREVIOUS] = plant_equipment_opening
+        account_information[cfg.MONGO_KEY_PLANT_EQUIPMENT_CLOSING_CURRENT] = plant_equipment_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['plant_equipment_value_opening'] = None
-        account_information['plant_equipment_value_closing'] = None
+        account_information[cfg.MONGO_KEY_PLANT_EQUIPMENT_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_PLANT_EQUIPMENT_CLOSING_CURRENT] = None
 
     try:
         tangible_list_opening = [
-            account_information['investment_property_value_opening'],
-            account_information['investment_asset_value_opening'],
-            account_information['biological_asset_value_opening'],
-            account_information['plant_equipment_value_opening']
+            account_information[cfg.MONGO_KEY_INVESTMENT_ASSETS_CLOSING_PREVIOUS],
+            account_information[cfg.MONGO_KEY_INVESTMENT_PROPERTY_CLOSING_PREVIOUS],
+            account_information[cfg.MONGO_KEY_BIOLOGICAL_ASSETS_CLOSING_PREVIOUS],
+            account_information[cfg.MONGO_KEY_PLANT_EQUIPMENT_CLOSING_PREVIOUS]
         ]
         tangible_list_closing = [
-            account_information['investment_property_value_closing'],
-            account_information['investment_asset_value_closing'],
-            account_information['biological_asset_value_closing'],
-            account_information['plant_equipment_value_closing']
+            account_information[cfg.MONGO_KEY_INVESTMENT_ASSETS_CLOSING_CURRENT],
+            account_information[cfg.MONGO_KEY_INVESTMENT_PROPERTY_CLOSING_CURRENT],
+            account_information[cfg.MONGO_KEY_BIOLOGICAL_ASSETS_CLOSING_CURRENT],
+            account_information[cfg.MONGO_KEY_PLANT_EQUIPMENT_CLOSING_CURRENT]
         ]
-        account_information['tangible_asset_value_opening'] = sum(
+        account_information[cfg.MONGO_KEY_TANGIBLE_ASSETS_CLOSING_PREVIOUS] = sum(
             filter(check_fact_value_string_none, tangible_list_opening)
         )
-        account_information['tangible_asset_value_closing'] = sum(
+        account_information[cfg.MONGO_KEY_TANGIBLE_ASSETS_CLOSING_CURRENT] = sum(
             filter(check_fact_value_string_none, tangible_list_closing)
         )
     except TypeError as _e:
         logging.warning(repr(_e))
-        account_information['tangible_asset_value_opening'] = None
-        account_information['tangible_asset_value_closing'] = None
+        account_information[cfg.MONGO_KEY_TANGIBLE_ASSETS_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_TANGIBLE_ASSETS_CLOSING_CURRENT] = None
 
     try:
         equity_opening, equity_closing = get_entity_equity(xbrl_instance)
-        account_information['balance_opening'] = equity_opening
-        account_information['balance_closing'] = equity_closing
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_PREVIOUS] = equity_opening
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_CURRENT] = equity_closing
     except KeyError as _e:
         logging.warning(repr(_e))
-        account_information['balance_opening'] = None
-        account_information['balance_closing'] = None
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_CURRENT] = None
+
+    try:
+        software = get_accounting_software(xbrl_instance)
+        account_information[cfg.MONGO_KEY_ACCOUNTING_SOFTWARE] = software
+    except KeyError:
+        account_information[cfg.MONGO_KEY_ACCOUNTING_SOFTWARE] = None
+
+    try:
+        name = get_entity_registered_name(xbrl_instance)
+        account_information[cfg.MONGO_KEY_ENTITY_NAME] = name
+    except KeyError:
+        account_information[cfg.MONGO_KEY_ENTITY_NAME] = None
+
+    return account_information
+
+
+def get_account_information_dictionary_validation(unique_id: str, xbrl_instance):
+    """use functions from digiaccouts_data to extract important facts from XBRL documents and return dictionary of
+    results
+
+    Args:
+        unique_id (string): UDF to serve as unique ID for dictionary
+        xbrl_instance (XbrlInstance): an XBRL instance containing accounts information from which financial data needs
+        to be extracted
+
+    Returns:
+        dict: dictionary containing extracted fact values
+    """
+
+    account_information = {
+        '_id': unique_id
+    }
+
+    try:
+        account_information[cfg.MONGO_KEY_ENTITY_REGISTRATION] = get_entity_registration(xbrl_instance)
+    except KeyError as _e:
+        logging.error(repr(_e))
+        account_information[cfg.MONGO_KEY_ENTITY_REGISTRATION] = None
+        return account_information
+
+    try:
+        period_starting, period_ending = get_startend_period(xbrl_instance)
+        account_information[cfg.MONGO_KEY_END_DATE] = period_ending
+        account_information[cfg.MONGO_KEY_START_DATE] = period_starting
+    except KeyError as _e:
+        logging.error(repr(_e))
+        account_information[cfg.MONGO_KEY_END_DATE] = None
+        return account_information
+
+    try:
+        account_information[cfg.MONGO_KEY_POSTAL_CODE] = get_entity_postcode(xbrl_instance)
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information[cfg.MONGO_KEY_POSTAL_CODE] = None
+
+    try:
+        account_information[cfg.MONGO_KEY_DORMANT_STATE] = get_dormant_state(xbrl_instance)
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information[cfg.MONGO_KEY_DORMANT_STATE] = None
+
+    try:
+        account_information[cfg.MONGO_KEY_AVERAGE_EMPLOYEES] = get_average_employees(xbrl_instance)
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information[cfg.MONGO_KEY_AVERAGE_EMPLOYEES] = None
+
+    try:
+        equity_opening, equity_closing = get_entity_equity(xbrl_instance)
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_PREVIOUS] = equity_opening
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_CURRENT] = equity_closing
+    except KeyError as _e:
+        logging.warning(repr(_e))
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_PREVIOUS] = None
+        account_information[cfg.MONGO_KEY_EQUITY_CLOSING_CURRENT] = None
+
+    try:
+        software = get_accounting_software(xbrl_instance)
+        account_information[cfg.MONGO_KEY_ACCOUNTING_SOFTWARE] = software
+    except KeyError:
+        account_information[cfg.MONGO_KEY_ACCOUNTING_SOFTWARE] = None
+
+    try:
+        name = get_entity_registered_name(xbrl_instance)
+        account_information[cfg.MONGO_KEY_ENTITY_NAME] = name
+    except KeyError:
+        account_information[cfg.MONGO_KEY_ENTITY_NAME] = None
 
     return account_information
 
@@ -183,7 +280,7 @@ def add_account_to_collection(accounts_collection, account_dictionary):
             '_id': unique_id,
         },
         update={
-            '$setOnInsert': account_dictionary | {'first_logged': datetime.now().isoformat()}
+            '$setOnInsert': account_dictionary | {'first_logged': datetime.now()}
         },
         upsert=True,
     )

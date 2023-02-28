@@ -52,7 +52,12 @@ def get_entity_registration(xbrl_instance):
     Returns:
         string: a string containing the entity registration number
     """
-    fact_name = cfg.FACT_NAME_COMPANY_REGISTRATION
+    fact_name = cfg.FACT_NAME_ENTITY_REGISTRATION
+    return get_single_fact(fact_name, xbrl_instance)
+
+
+def get_entity_registered_name(xbrl_instance):
+    fact_name = cfg.FACT_NAME_ENTITY_NAME
     return get_single_fact(fact_name, xbrl_instance)
 
 
@@ -129,13 +134,13 @@ def get_startend_period(xbrl_instance):
 
     try:
         start = get_single_fact(start_key, xbrl_instance)
-        start = dateutil.parser.parse(start).date().isoformat()
+        start = dateutil.parser.parse(start)
     except KeyError:
         pass
 
     try:
         end = get_single_fact(end_key, xbrl_instance)
-        end = dateutil.parser.parse(end).date().isoformat()
+        end = dateutil.parser.parse(end)
     except KeyError:
         pass
 
@@ -204,12 +209,12 @@ def return_openclose_from_fact_list(value_date_dict_list, xbrl_instance):
         if (
             (opening is None)
             and (start is not None)
-            and (item['date'] <= dateutil.parser.parse(start).date())
+            and (item['date'] <= start.date())
         ):
             opening = item['value']
         elif (
             (closing is None)
-            and (item['date'] >= dateutil.parser.parse(end).date())
+            and (item['date'] >= end.date())
         ):
             closing = item['value']
         else:

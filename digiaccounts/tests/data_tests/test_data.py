@@ -1,6 +1,7 @@
 """unit tests for digiaccounts_data functions"""
 
 import pytest
+from datetime import datetime
 
 from digiaccounts.digiaccounts_data import (
     get_single_fact,
@@ -133,7 +134,8 @@ def test_get_startend_period(yield_xbrl_instance):
     Expected to return tuple ('2020-01-01', '2020-12-31') when parsed XbrlInstance of example_happy.xhtml
     """
     inst = yield_xbrl_instance()
-    data_truth = ('2020-01-01', '2020-12-31')
+    data_truth = (datetime.strptime('2020-01-01', '%Y-%m-%d'),
+                  datetime.strptime('2020-12-31', '%Y-%m-%d'))
 
     assert get_startend_period(inst) == data_truth
 
@@ -154,48 +156,48 @@ def test_get_entity_postcode(yield_xbrl_instance):
 
 def test_get_entity_turnover(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (20000000.0, 10000000.0)
+    data_truth = (10000000.0, 20000000.0)
 
     assert get_entity_turnover(inst) == data_truth
 
 
 def test_get_intangible_assets(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (120000000.0, 110000000.0)
+    data_truth = (110000000.0, 120000000.0)
 
     assert get_intangible_assets(inst) == data_truth
 
 
 def test_get_investment_property(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (220000000.0, 210000000.0)
+    data_truth = (210000000.0, 220000000.0)
 
     assert get_investment_property(inst) == data_truth
 
 
 def test_get_investment_assets(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (320000000.0, 310000000.0)
+    data_truth = (310000000.0, 320000000.0)
 
     assert get_investment_assets(inst) == data_truth
 
 
 def test_get_biological_assets(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (420000000.0, 410000000.0)
+    data_truth = (410000000.0, 420000000.0)
 
     assert get_biological_assets(inst) == data_truth
 
 
 def test_get_plant_equipment(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (520000000.0, 510000000.0)
+    data_truth = (510000000.0, 520000000.0)
 
     assert get_plant_equipment(inst) == data_truth
 
 
 def test_get_entity_equity(yield_xbrl_instance):
     inst = yield_xbrl_instance()
-    data_truth = (620000000.0, 610000000.0)
+    data_truth = (610000000.0, 620000000.0)
 
     assert get_entity_equity(inst) == data_truth
