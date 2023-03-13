@@ -1,13 +1,40 @@
 """functions to deploy the XBRL fact extraction functions from digiaccounts_data and place collected data into
 documents"""
 
+import re
 import uuid
 import logging
+from io import StringIO
+from pathlib import Path
+from typing import List
 from datetime import datetime
+import xml.etree.ElementTree as ET
 import dateutil.parser
 import oracledb
 import pymongo
-
+from xbrl import InstanceParseException
+from xbrl.cache import HttpCache
+from xbrl.helper.uri_helper import resolve_uri
+from xbrl.helper.xml_parser import parse_file
+from xbrl.taxonomy import Concept, TaxonomySchema, parse_taxonomy, parse_taxonomy_url
+from xbrl.instance import (
+    LINK_NS,
+    XLINK_NS,
+    NAME_SPACES,
+    AbstractContext,
+    AbstractFact,
+    AbstractUnit,
+    NumericFact,
+    TextFact,
+    XbrlInstance,
+    XbrlParser,
+    _extract_non_fraction_value,
+    _extract_non_numeric_value,
+    _load_common_taxonomy,
+    _parse_context_elements,
+    _parse_unit_elements,
+    _update_ns_map
+)
 
 from digiaccounts.digiaccounts_data import (
     get_entity_registration,
@@ -28,6 +55,87 @@ from digiaccounts.digiaccounts_data import (
 
 from digiaccounts.digiaccounts_util import check_fact_value_string_none, return_data_link_credentials
 from digiaccounts import config as cfg
+
+
+class XbrlParserDA(XbrlParser):
+
+    def parse_string_instance(self, string_instance: str) -> XbrlInstance:
+        return parse_ixbrl_string(string_instance, self.cache)
+
+
+def parse_ixbrl_string(string_instance: str, cache: HttpCache, schema_root=None) -> XbrlInstance:
+    """
+    Parses a inline XBRL (iXBRL) instance file.
+
+    :param string_instance: string in memory containing contents of iXBRL instance
+    :param cache: HttpCache instance
+    :param schema_root: path to the directory where the taxonomy schema is stored (Only works for relative imports)
+    :return: parsed XbrlInstance object containing all facts with additional information
+    """
+
+    contents = string_instance
+    pattern = r'<[ ]*script.*?\/[ ]*script[ ]*>'
+    contents = re.sub(pattern, '', contents, flags=(re.IGNORECASE | re.MULTILINE | re.DOTALL))
+
+    root: ET.ElementTree = parse_file(StringIO(contents))
+    ns_map: dict = root.getroot().attrib['ns_map']
+    # get the link to the taxonomy schema and parse it
+    schema_ref: ET.Element = root.find(f'.//{LINK_NS}schemaRef')
+    schema_uri: str = schema_ref.attrib[XLINK_NS + 'href']
+    # check if the schema uri is relative or absolute
+    # submissions from SEC normally have their own schema files, whereas submissions from the uk have absolute schemas
+    if schema_uri.startswith('http'):
+        # fetch the taxonomy extension schema from remote
+        taxonomy: TaxonomySchema = parse_taxonomy_url(schema_uri, cache)
+    elif schema_root:
+        # take the given schema_root path as directory for searching for the taxonomy schema
+        schema_path = str(next(Path(schema_root).glob(f'**/{schema_uri}')))
+        taxonomy: TaxonomySchema = parse_taxonomy(schema_path, cache)
+    else:
+        # try to find the taxonomy extension schema file locally because no full url can be constructed
+        schema_path = resolve_uri(string_instance, schema_uri)
+        taxonomy: TaxonomySchema = parse_taxonomy(schema_path, cache)
+
+    # get all contexts and units
+    xbrl_resources: ET.Element = root.find('.//ix:resources', ns_map)
+    if xbrl_resources is None:
+        raise InstanceParseException('Could not find xbrl resources in file')
+    # parse contexts and units
+    context_dir = _parse_context_elements(xbrl_resources.findall('xbrli:context', NAME_SPACES), ns_map, taxonomy, cache)
+    unit_dir = _parse_unit_elements(xbrl_resources.findall('xbrli:unit', NAME_SPACES))
+
+    # parse facts
+    facts: List[AbstractFact] = []
+    fact_elements: List[ET.Element] = root.findall('.//ix:nonFraction', ns_map) + root.findall('.//ix:nonNumeric',
+                                                                                               ns_map)
+    for fact_elem in fact_elements:
+        # update the prefix map (sometimes the xmlns is defined at XML-Element level and not at the root element)
+        _update_ns_map(ns_map, fact_elem.attrib['ns_map'])
+        taxonomy_prefix, concept_name = fact_elem.attrib['name'].split(':')
+
+        tax = taxonomy.get_taxonomy(ns_map[taxonomy_prefix])
+        if tax is None:
+            tax = _load_common_taxonomy(cache, ns_map[taxonomy_prefix], taxonomy)
+
+        xml_id: str or None = fact_elem.attrib['id'] if 'id' in fact_elem.attrib else None
+
+        concept: Concept = tax.concepts[tax.name_id_map[concept_name]]
+        context: AbstractContext = context_dir[fact_elem.attrib['contextRef'].strip()]
+        # ixbrl values are not normalized! They are formatted (i.e. 123,000,000)
+
+        if fact_elem.tag == '{' + ns_map['ix'] + '}nonFraction':
+            fact_value: float or None = _extract_non_fraction_value(fact_elem)
+
+            unit: AbstractUnit = unit_dir[fact_elem.attrib['unitRef'].strip()]
+            decimals_text: str = str(fact_elem.attrib['decimals']).strip() if 'decimals' in fact_elem.attrib else '0'
+            decimals: int = None if decimals_text.lower() == 'inf' else int(decimals_text)
+
+            facts.append(NumericFact(concept, context, fact_value, unit, decimals, xml_id))
+        elif fact_elem.tag == '{' + ns_map['ix'] + '}nonNumeric':
+            fact_value: str = _extract_non_numeric_value(fact_elem)
+            facts.append(TextFact(concept, context, str(fact_value), xml_id))
+
+    return XbrlInstance(string_instance, taxonomy, facts, context_dir, unit_dir)
 
 
 def get_account_information_dictionary(unique_id: str, filing_date: datetime.date or str, xbrl_instance):
