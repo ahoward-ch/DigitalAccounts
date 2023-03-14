@@ -58,8 +58,21 @@ from digiaccounts import config as cfg
 
 
 class XbrlParserDA(XbrlParser):
+    """extension of py-xbrl Parser class to include new function for reading iXBRL files from strings in memory
+
+    Args:
+        XbrlParser (XbrlParser): parent class
+    """
 
     def parse_string_instance(self, string_instance: str) -> XbrlInstance:
+        """custom reader class for creating XbrlInstance from iXBRL file stored as string in memory
+
+        Args:
+            string_instance (str): string containing iXBRL file contents
+
+        Returns:
+            XbrlInstance:
+        """
         return parse_ixbrl_string(string_instance, self.cache)
 
 
@@ -448,6 +461,8 @@ def create_unique_id(filename):
 
 
 def return_data_source_connection():
+    """returns an oracleDB connection to a source specified in the configs
+    """
     credentials = return_data_link_credentials('DataSource')
     username = credentials.get('username')
     password = credentials.get('password')
@@ -461,9 +476,12 @@ def return_data_source_connection():
 
 
 def return_data_target_connection():
+    """returns a mongodb client to a destination specified in the configs
+    """
     credentials = return_data_link_credentials('DataTargetAdmin')
     username = credentials.get('username')
     password = credentials.get('password')
-    _s = f'mongodb+srv://{username}:{password}@cluster0-pl-0.u1nnh.mongodb.net/test?authSource=admin&replicaSet=atlas-mh1x8w-shard-0&readPreference=primary'
+    destination = credentials.get('destination')
+    _s = f'mongodb+srv://{username}:{password}@{destination}'
 
     return pymongo.MongoClient(_s)
