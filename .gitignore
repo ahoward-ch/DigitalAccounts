@@ -13,3 +13,4 @@ accounts_data/**
 **.temp
 **.tmp
 validation/**
+**egg-info/**
