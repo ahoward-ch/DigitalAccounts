@@ -19,8 +19,8 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        'oracledb==1.2.2',
-        'py_xbrl==2.2.6',
+        'oracledb',
+        'py_xbrl',
         'pymongo==4.3.3',
         'pytest==7.1.2',
         'python_dateutil==2.8.2',

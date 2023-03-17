@@ -1,7 +1,5 @@
 """utility functions for checking XBRL Fact contents"""
 
-import configparser
-
 
 def check_unit_gbp(fact):
     """returns boolean check if a fact contains a GBP unit
@@ -115,12 +113,3 @@ def check_fact_value_string_none(value):
         return True
     else:
         return False
-
-
-def return_data_link_credentials(uplink_type=None):
-    config = configparser.ConfigParser()
-    config.read('credentials.ini')
-
-    if (uplink_type is not None) and (uplink_type in config.sections()):
-        return config[uplink_type]
-    return config

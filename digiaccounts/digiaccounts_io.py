@@ -10,8 +10,6 @@ from typing import List
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import dateutil.parser
-import oracledb
-import pymongo
 from xbrl import InstanceParseException
 from xbrl.cache import HttpCache
 from xbrl.helper.uri_helper import resolve_uri
@@ -53,7 +51,7 @@ from digiaccounts.digiaccounts_data import (
     get_entity_registered_name
 )
 
-from digiaccounts.digiaccounts_util import check_fact_value_string_none, return_data_link_credentials
+from digiaccounts.digiaccounts_util import check_fact_value_string_none
 from digiaccounts import config as cfg
 
 
@@ -458,30 +456,3 @@ def create_unique_id(filename):
     """
     registration, end_period = get_file_registration_period_from_filename(filename)
     return get_uuid(registration, end_period)
-
-
-def return_data_source_connection():
-    """returns an oracleDB connection to a source specified in the configs
-    """
-    credentials = return_data_link_credentials('DataSource')
-    username = credentials.get('username')
-    password = credentials.get('password')
-    host = credentials.get('host')
-    port = credentials.getint('port')
-    protocol = credentials.get('protocol')
-    name = credentials.get('name')
-
-    params = oracledb.ConnectParams(host=host, port=port, protocol=protocol, service_name=name)
-    return oracledb.connect(user=username, password=password, params=params)
-
-
-def return_data_target_connection():
-    """returns a mongodb client to a destination specified in the configs
-    """
-    credentials = return_data_link_credentials('DataTargetAdmin')
-    username = credentials.get('username')
-    password = credentials.get('password')
-    destination = credentials.get('destination')
-    _s = f'mongodb+srv://{username}:{password}@{destination}'
-
-    return pymongo.MongoClient(_s)
