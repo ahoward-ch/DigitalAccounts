@@ -1,3 +1,5 @@
+"""instantiates digiaccounts module and handles top level imports"""
+
 from digiaccounts.digiaccounts_io import XbrlParserDA, get_account_information_dictionary
 from digiaccounts.digiaccounts_data import (
     get_single_fact,
